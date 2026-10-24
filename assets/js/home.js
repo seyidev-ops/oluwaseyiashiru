@@ -12,7 +12,7 @@
 
   var field = OA.field(document.getElementById('field'), {
     mode: 'orbit', seed: 5,
-    count: function (W) { return W < 700 ? 16 : 32; },
+    count: function (W) { return W < 700 ? 34 : 58; },
     center: coreCenter,
     inner: function () { return core.offsetWidth * 0.74; },
     clear: function () { return core.offsetWidth * 0.56; },
@@ -34,6 +34,7 @@
     e.preventDefault();
     leaving = true;
     core.classList.add('leaving');
+    var ring = document.getElementById('ring'); ring.style.transition = 'opacity .3s'; ring.style.opacity = '0';
     field.collapse();
     var href = core.getAttribute('href');
     setTimeout(function () { window.location.href = href; }, 900);

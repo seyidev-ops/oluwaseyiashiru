@@ -219,7 +219,7 @@
   /* Orbit mode: evenly spaced rings. Every ring turns as one, so the spacing never bunches up. */
   Field.prototype.layout = function () {
     var B = this.box(), W = B.w, H = B.h, n = this.frags.length;
-    var rings = W < 700 ? 3 : 4, perRing = Math.ceil(n / rings);
+    var rings = W < 700 ? 4 : 5, perRing = Math.ceil(n / rings);
     var inner = this.o.inner ? this.o.inner() : Math.min(W, H) * 0.22;
     var s = 3, r = function () { s = (s * 9301 + 49297) % 233280; return s / 233280; };
     this.frags.forEach(function (f, i) {
@@ -230,9 +230,10 @@
       f.theta = slot / perRing * Math.PI * 2 + ring * 0.7;
       f.rx = inner + 40 + (W / 2 - inner - 40) * (0.15 + 0.85 * k) - f.w * 0.15;
       f.ry = inner * 0.75 + 20 + (H / 2 - inner * 0.75 - 30) * (0.2 + 0.8 * k);
-      f.omega = (0.07 - ring * 0.01) * (ring % 2 ? -1 : 1);
+      f.rx *= 0.9 + r() * 0.2; f.ry *= 0.88 + r() * 0.24;            // a little disorder inside each ring
+      f.omega = (0.2 - ring * 0.022 + r() * 0.05) * (W < 700 ? 1.35 : 1) * (ring % 2 ? -1 : 1);
       f.tilt = r() * Math.PI * 2;
-      f.wob = 4 + r() * 6; f.wsp = 0.4 + r() * 0.5;
+      f.wob = 8 + r() * 14; f.wsp = 0.6 + r() * 0.9;
       f.bx = r() * W; f.by = r() * H;
       f.sx = (r() - 0.5) * 14; f.sy = (r() - 0.5) * 10;
     });
