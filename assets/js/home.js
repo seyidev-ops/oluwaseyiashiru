@@ -10,12 +10,17 @@
     return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: r.width / 2 };
   }
 
+  function wide() { return window.innerWidth > 760; }
+  function ringBox() { var r = document.getElementById('ring'); return r.offsetWidth / 2 + 10; }
+
   var field = OA.field(document.getElementById('field'), {
     mode: 'orbit', seed: 5,
     count: function (W) { return W < 700 ? 34 : 58; },
     center: coreCenter,
-    inner: function () { return core.offsetWidth * 0.46; },
-    clear: function () { return core.offsetWidth * 0.44; },
+    /* computer: labels keep clear of the icon and its words; phone: they may cross it, as a fading ghost */
+    inner: function () { return core.offsetWidth * (wide() ? 0.66 : 0.46); },
+    clear: function () { return wide() ? 0 : core.offsetWidth * 0.44; },
+    guard: function () { return wide() ? ringBox() : 0; },
     speedMul: function () { return hovering ? 0.3 : 1; }
   });
 
@@ -45,11 +50,17 @@
   var ringPath = document.getElementById('ring-path'), instr = document.getElementById('ring-instr'), about = document.getElementById('ring-about');
   function fitRing() {
     if (!ringPath || !instr || !instr.getComputedTextLength) return;
-    var L = ringPath.getTotalLength(), size = parseFloat(getComputedStyle(instr).fontSize) || 12;
-    instr.style.fontSize = ''; size = parseFloat(getComputedStyle(instr).fontSize) || 12;
-    for (var i = 0; i < 12 && instr.getComputedTextLength() > L * 0.8; i++) { size *= 0.94; instr.style.fontSize = size + 'px'; }
-    var used = instr.getComputedTextLength(), gap = L - used;
-    about.setAttribute('startOffset', (used + gap / 2).toFixed(1));
+    var L = ringPath.getTotalLength(), aboutText = about.parentNode;
+    var size = 12;
+    for (var i = 0; i < 4; i++) {
+      instr.style.fontSize = aboutText.style.fontSize = size + 'px';
+      var used = instr.getComputedTextLength(), al = aboutText.getComputedTextLength();
+      var target = L - al - size * 1.6;                 /* just enough room left for About, with a breath either side */
+      size = Math.max(7, Math.min(22, size * target / used));
+    }
+    instr.style.fontSize = aboutText.style.fontSize = size + 'px';
+    used = instr.getComputedTextLength();
+    about.setAttribute('startOffset', ((used + L) / 2).toFixed(1));
   }
 
   var go = function () { fitRing(); field.layout(); field.start(); };

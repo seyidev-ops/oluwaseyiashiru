@@ -29,15 +29,24 @@ body.home .frag { font-size: .8rem; box-shadow: 0 6px 22px -14px rgba(20, 33, 61
 }
 .core-halo { position: absolute; inset: 9%; display: grid; place-items: center; transition: transform .5s var(--ease); will-change: transform; }
 .core-halo img { width: 100%; animation: float 7s ease-in-out infinite; }
-@keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-12px) rotate(-1.5deg); } }
+@keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-14px) rotate(-1.5deg); } }
+/* the portrait levitates: a soft shadow on the ground below it, tightening and darkening as it sinks, spreading and fading as it rises */
+.core-shadow {
+  position: absolute; left: 20%; right: 20%; bottom: -1%; height: 10%; border-radius: 50%; pointer-events: none; z-index: -1;
+  background: radial-gradient(closest-side, rgba(20, 33, 61, .62), rgba(20, 33, 61, .28) 55%, transparent);
+  filter: blur(4px); animation: hover-shadow 7s ease-in-out infinite;
+}
+html.is-dark .core-shadow { background: radial-gradient(closest-side, #000, rgba(0, 0, 0, .7) 50%, transparent); height: 12%; filter: blur(3px); }
+@keyframes hover-shadow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.78); opacity: .6; } }
+.core.leaving .core-shadow { opacity: 0; transition: opacity .3s; }
 .call-ring { position: absolute; left: 50%; top: 50%; z-index: 6; width: calc(clamp(170px, 32vmin, 330px) * 1.12); aspect-ratio: 1 / 1; transform: translate(-50%, -50%); pointer-events: none; }
 .core-words { width: 100%; height: 100%; overflow: visible; animation: ringspin 26s linear infinite; }
 .call-ring:has(.rw-about:hover) .core-words, .call-ring:has(.rw-about:focus-visible) .core-words { animation-play-state: paused; }
 .rw-about { pointer-events: auto; cursor: pointer; }
-.rw-about tspan { fill: var(--ink); font-weight: 700; letter-spacing: .24em; }
+.rw-about tspan { fill: var(--ink); font-weight: 700; }
 .rw-about:hover tspan, .rw-about:focus-visible tspan { text-decoration: underline; }
 .rw-about:focus-visible { outline: none; }
-.core-words text { font-family: var(--body); font-weight: 600; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; fill: var(--gold-ink); }
+.core-words text { font-family: var(--body); font-weight: 600; font-size: 12px; letter-spacing: .12em; white-space: pre; text-transform: uppercase; fill: var(--gold-ink); }
 @keyframes ringspin { to { transform: rotate(360deg); } }
 .core:hover ~ .call-ring .core-words { animation-duration: 9s; }
 .core-pulse { position: absolute; inset: 8%; border-radius: 50%; border: 2px solid var(--gold); opacity: 0; pointer-events: none; }
@@ -63,6 +72,5 @@ body.home .frag { font-size: .8rem; box-shadow: 0 6px 22px -14px rgba(20, 33, 61
   .home-line { font-size: .86rem; }
   body.home .frag { font-size: .7rem; }
   .core { width: 50vw; }
-  .call-ring { width: 84vw; }
-  .core-words text { font-size: 11.5px; letter-spacing: .07em; }
+  .call-ring { width: calc(50vw * 1.16); }
 }

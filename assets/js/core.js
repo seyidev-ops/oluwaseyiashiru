@@ -255,6 +255,7 @@
     var px = pointer.x - B.x, py = pointer.y - B.y;
     var R = this.o.flee || (W < 700 ? 110 : 160);
     var clearR = this.o.clear ? this.o.clear() : 0;
+    var guardR = this.o.guard ? this.o.guard() : 0;
     var pActive = pointer.active && (now - pointer.t < 2500 || !matchMedia('(hover: none)').matches);
     this.panic *= 0.985;
     var speed = (1 + this.panic * 2.5) * (this.o.speedMul ? this.o.speedMul() : 1);
@@ -287,6 +288,16 @@
         f.alpha = 1 - e;
       }
       f.x = bx + f.dx; f.y = by + f.dy;
+      if (guardR && self.mode === 'orbit') {
+        /* a keep-out frame: labels slide around the icon and its words, never over them */
+        for (var g = 0; g < 3; g++) {
+          var gx = Math.max(f.x, Math.min(center.x, f.x + f.w)), gy = Math.max(f.y, Math.min(center.y, f.y + f.h));
+          var gd = Math.sqrt((gx - center.x) * (gx - center.x) + (gy - center.y) * (gy - center.y));
+          if (gd >= guardR) break;
+          var ux = f.x + f.w / 2 - center.x, uy = f.y + f.h / 2 - center.y, ul = Math.sqrt(ux * ux + uy * uy) || 1;
+          f.x += ux / ul * (guardR - gd + 1); f.y += uy / ul * (guardR - gd + 1);
+        }
+      }
       var sc = 1 - e * 0.7;
       f.el.style.transform = 'translate3d(' + f.x.toFixed(1) + 'px,' + f.y.toFixed(1) + 'px,0) scale(' + sc.toFixed(3) + ')';
       if (self.mode !== 'drift') {
