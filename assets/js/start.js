@@ -10,8 +10,9 @@
       ['skill', 'A skill I have', 'Something I can already do well'],
       ['goal', 'A goal I keep postponing', 'Something I keep meaning to do']] },
     { id: 'field', kind: 'choice', compact: true, q: 'Which part of life is it about?', opts: [
-      ['career', 'Work and career'], ['business', 'Business and money'], ['tech', 'AI and tech'], ['faith', 'Faith'],
-      ['learning', 'School and learning'], ['creative', 'Creative work'], ['other', 'Something else']] },
+      ['career', 'Work and career'], ['business', 'Business'], ['money', 'Personal money'], ['tech', 'AI and tech'],
+      ['faith', 'Faith'], ['learning', 'School and learning'], ['family', 'Family and relationships'], ['health', 'Health and wellbeing'],
+      ['creative', 'Creative work'], ['trades', 'Skills and trades'], ['community', 'Leadership and community'], ['other', 'Something else']] },
     { id: 'what', kind: 'text', q: {
       idea: 'Describe your idea in one sentence.', learned: 'What did you learn, and where?',
       skill: 'What can you do?', goal: 'What is the goal?' },
@@ -138,11 +139,16 @@
   /* ---------------- Streamline the entry into a first to-do ---------------- */
   var FIELD = {
     career: { label: 'Work and career', who: 'A recruiter, a hiring manager or a company posting jobs you can do.', make: 'a one-page CV, a portfolio piece or a LinkedIn post' },
-    business: { label: 'Business and money', who: 'A shop, a founder or a customer who has the problem you solve.', make: 'a WhatsApp catalogue, a one-page offer or a sample product' },
+    business: { label: 'Business', who: 'A shop, a founder or a customer who has the problem you solve.', make: 'a WhatsApp catalogue, a one-page offer or a sample product' },
     tech: { label: 'AI and tech', who: 'A small business that still does this by hand.', make: 'a simple prototype, a demo video or a form' },
     faith: { label: 'Faith', who: 'Your church, a ministry or a believer who needs this help.', make: 'a short study, a prayer guide or one small group meeting' },
     learning: { label: 'School and learning', who: 'A student, a parent or a school.', make: 'a one-page guide, a short lesson or a practice sheet' },
     creative: { label: 'Creative work', who: 'A brand, an event planner or a friend with a launch coming.', make: 'one finished piece you can share' },
+    money: { label: 'Personal money', who: 'Someone who handles money well and could check your plan.', make: 'a simple budget, a savings tracker or a price list' },
+    family: { label: 'Family and relationships', who: 'A family member or friend this would help.', make: 'a family plan, a shared routine or one honest conversation' },
+    health: { label: 'Health and wellbeing', who: 'A friend who wants the same change and can keep you accountable.', make: 'a weekly routine, a meal plan or a walking schedule' },
+    trades: { label: 'Skills and trades', who: 'A shop, workshop or customer near you who needs this work done.', make: 'one finished sample, photos of past work or a price list' },
+    community: { label: 'Leadership and community', who: 'A group, church or association that needs this.', make: 'a one-page proposal, a meeting plan or a small first event' },
     other: { label: 'Everyday life', who: 'Someone in your circle who has asked for this before.', make: 'something simple you can show' }
   };
   var TYPE_LABEL = { idea: 'Your idea', learned: 'What you learned', skill: 'Your skill', goal: 'Your goal' };
