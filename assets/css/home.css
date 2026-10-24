@@ -14,11 +14,10 @@ body.home .frag { font-size: .9rem; box-shadow: 0 6px 22px -14px rgba(20, 33, 61
 }
 .core-halo {
   position: absolute; inset: 0; display: grid; place-items: center; border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%, var(--halo) 0 63%, transparent 64%);
-  transition: transform .5s var(--ease), background .6s;
+  transition: transform .5s var(--ease);
   will-change: transform;
 }
-.core-halo img { width: 92%; filter: drop-shadow(0 20px 40px rgba(20, 33, 61, .22)); animation: float 7s ease-in-out infinite; }
+.core-halo img { width: 92%; animation: float 7s ease-in-out infinite; }
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-12px) rotate(-1.5deg); } }
 .core-pulse { position: absolute; inset: 4%; border-radius: 50%; border: 2px solid var(--gold); opacity: 0; pointer-events: none; }
 .core.calling .core-pulse { animation: pulse 1.6s var(--ease) infinite; }

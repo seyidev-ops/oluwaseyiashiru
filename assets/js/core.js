@@ -4,29 +4,37 @@
   var root = document.documentElement;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------------- Theme ---------------- */
+  /* ---------------- Theme: day, night, or auto (follows the device) ---------------- */
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
-  function systemDark() { return window.matchMedia('(prefers-color-scheme: dark)').matches; }
-  function applyTheme(t) {
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+  var MODES = ['light', 'dark', 'system'];
+  var NAMES = { light: 'Day', dark: 'Night', system: 'Auto' };
+  var mode = store('oa-theme'); if (MODES.indexOf(mode) < 0) mode = 'system';
+  function resolved() { return mode === 'system' ? (mq.matches ? 'dark' : 'light') : mode; }
+  function applyTheme() {
+    var t = resolved();
     root.setAttribute('data-theme', t);
     root.classList.toggle('is-dark', t === 'dark');
+    root.classList.toggle('is-auto', mode === 'system');
+    var next = MODES[(MODES.indexOf(mode) + 1) % 3];
     document.querySelectorAll('.orbit-toggle').forEach(function (b) {
-      var next = t === 'dark' ? 'day' : 'night';
-      b.setAttribute('aria-label', 'Switch to ' + next);
-      b.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
-      var l = b.querySelector('.toggle-label'); if (l) l.textContent = 'Switch to ' + next;
+      b.setAttribute('aria-label', 'Theme: ' + NAMES[mode] + '. Switch to ' + NAMES[next] + (next === 'system' ? ' (match your device)' : ''));
+      var l = b.querySelector('.toggle-label');
+      if (l) l.textContent = NAMES[mode] + (mode === 'system' ? ' · matches your device' : '') + ' → ' + NAMES[next];
     });
+    document.dispatchEvent(new CustomEvent('oa-theme'));
   }
-  var saved = store('oa-theme');
-  applyTheme(saved === 'dark' || saved === 'light' ? saved : (systemDark() ? 'dark' : 'light'));
+  if (mq.addEventListener) mq.addEventListener('change', function () { if (mode === 'system') applyTheme(); });
+  applyTheme();
 
   var TOGGLE_SVG =
-    '<span class="toggle-label"></span>' +
+    '<span class="toggle-label" aria-hidden="true"></span>' +
     '<svg viewBox="0 0 44 44" aria-hidden="true">' +
       '<defs><mask id="oa-sun-mask"><rect x="0" y="0" width="44" height="44" fill="#fff"/><circle class="bite" cx="22" cy="22" r="7" fill="#000"/></mask></defs>' +
       '<g class="rays"><path d="M22 6v3M22 35v3M6 22h3M35 22h3M10.7 10.7l2.1 2.1M31.2 31.2l2.1 2.1M10.7 33.3l2.1-2.1M31.2 12.8l2.1-2.1"/></g>' +
       '<circle class="ring" cx="22" cy="22" r="19" stroke-dasharray="2 4"/>' +
       '<circle class="sun" cx="22" cy="22" r="8" mask="url(#oa-sun-mask)"/>' +
+      '<path class="auto-half" d="M22 14a8 8 0 0 1 0 16z"/>' +
       '<circle class="moonlet" cx="41" cy="22" r="2.4"/>' +
     '</svg>';
 
@@ -36,16 +44,80 @@
       b.type = 'button';
       b.innerHTML = TOGGLE_SVG;
       b.addEventListener('click', function () {
-        var t = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        applyTheme(t); store('oa-theme', t);
+        mode = MODES[(MODES.indexOf(mode) + 1) % 3];
+        store('oa-theme', mode); applyTheme();
+        b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash');
       });
     });
-    applyTheme(root.getAttribute('data-theme'));
+    applyTheme();
+  }
+
+  /* ---------------- Mobile menu ---------------- */
+  function mountMenu() {
+    var btn = document.querySelector('.menu-btn'), nav = document.getElementById('site-nav');
+    if (!btn || !nav) return;
+    btn.addEventListener('click', function () {
+      var open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.textContent = open ? 'Close' : 'Menu';
+    });
+  }
+
+  /* ---------------- Inner pages: threads of order (calm lines that bend toward you) ---------------- */
+  function Threads(canvas) {
+    var ctx = canvas.getContext('2d'), W = 0, H = 0, dpr = 1, raf = 0, colors = {};
+    var lines = [], N = 0;
+    function readColors() {
+      var cs = getComputedStyle(root);
+      colors.line = cs.getPropertyValue('--thread').trim() || 'rgba(212,162,76,.3)';
+      colors.dot = cs.getPropertyValue('--gold').trim() || '#D4A24C';
+      colors.ink = cs.getPropertyValue('--thread-ink').trim() || 'rgba(20,33,61,.12)';
+    }
+    function size() {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr; canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      N = W < 700 ? 6 : 9;
+      lines = [];
+      for (var i = 0; i < N; i++) {
+        lines.push({ y: H * (i + 1) / (N + 1), amp: 18 + (i % 3) * 14, len: 260 + (i % 4) * 90, sp: 0.18 + (i % 5) * 0.05, ph: i * 1.3,
+          gold: i % 3 === 1, dots: [Math.random(), Math.random() * 0.5 + 0.5].map(function (p) { return { p: p, v: 0.025 + Math.random() * 0.03 }; }) });
+      }
+    }
+    function yAt(L, x, t) {
+      var y = L.y + Math.sin(x / L.len * Math.PI * 2 + t * L.sp + L.ph) * L.amp + Math.sin(x / (L.len * 2.3) + t * 0.11 + L.ph) * L.amp * 0.6;
+      if (pointer.active) {
+        var dx = x - pointer.x, dy = pointer.y - y, g = Math.exp(-(dx * dx) / (2 * 120 * 120));
+        if (Math.abs(dy) < 220) y += dy * 0.45 * g * (1 - Math.abs(dy) / 220);
+      }
+      return y;
+    }
+    function draw(now) {
+      var t = now / 1000;
+      ctx.clearRect(0, 0, W, H);
+      lines.forEach(function (L) {
+        ctx.beginPath();
+        for (var x = -20; x <= W + 20; x += 14) { var y = yAt(L, x, t); if (x === -20) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+        ctx.strokeStyle = L.gold ? colors.line : colors.ink; ctx.lineWidth = L.gold ? 1.4 : 1; ctx.stroke();
+        L.dots.forEach(function (d) {
+          if (!reduce) { d.p += d.v * 0.016; if (d.p > 1.05) d.p = -0.05; }
+          var x = d.p * W, y = yAt(L, x, t);
+          ctx.beginPath(); ctx.arc(x, y, L.gold ? 3.2 : 2.2, 0, Math.PI * 2); ctx.fillStyle = colors.dot; ctx.globalAlpha = L.gold ? 0.9 : 0.5; ctx.fill(); ctx.globalAlpha = 1;
+        });
+      });
+      if (!reduce && !document.hidden) raf = requestAnimationFrame(draw); else raf = 0;
+    }
+    readColors(); size();
+    window.addEventListener('resize', function () { size(); if (reduce) draw(0); });
+    document.addEventListener('oa-theme', function () { readColors(); if (reduce) draw(0); });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden && !raf && !reduce) raf = requestAnimationFrame(draw); });
+    raf = requestAnimationFrame(draw);
   }
 
   /* ---------------- Knowledge from every field ---------------- */
   var KNOWLEDGE = [
-    ['Maths', 'How to solve quadratic equations'], ['English', 'When to use “its” and “it’s”'],
+    ['Academics', 'How to solve quadratic equations'], ['English', 'When to use “its” and “it’s”'],
     ['Idiom', 'Break a leg: what it really means'], ['Photoshop', 'Remove a background in 2 minutes'],
     ['Business', 'How to turn that idea into money'], ['Language', 'How to translate this into French'],
     ['Money', 'How to save 10% of every salary'], ['AI', 'How to get ChatGPT to do real work'],
@@ -63,7 +135,7 @@
     ['Time', 'Plan your week in 15 minutes'], ['AI', 'Write a prompt that works first time'],
     ['Music', 'Learn three chords on guitar'], ['Language', 'Spanish greetings in a day'],
     ['Remote work', 'Land your first remote job'], ['Leadership', 'Run a meeting people value'],
-    ['Maths', 'Percentages in your head'], ['Cooking', 'Bake bread at home'],
+    ['Academics', 'Percentages in your head'], ['Cooking', 'Bake bread at home'],
     ['Business', 'Register a business in Nigeria'], ['Design', 'Choose colours that match'],
     ['Health', 'Build a 20-minute morning routine'], ['Tech', 'Build a website in a weekend'],
     ['Negotiation', 'How to ask for a raise'], ['Idiom', 'Once in a blue moon'],
@@ -220,9 +292,8 @@
   };
 
   function ready() {
-    mountToggles();
-    var amb = document.querySelector('.ambient');
-    if (amb) { var f = window.OA.field(amb, { mode: 'drift', count: function (W) { return W < 700 ? 8 : 14; }, seed: 29 }); f.start(); }
+    mountToggles(); mountMenu();
+    var th = document.querySelector('canvas.threads'); if (th && th.getContext) Threads(th);
     var y = document.getElementById('year'); if (y) y.textContent = new Date().getFullYear();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();

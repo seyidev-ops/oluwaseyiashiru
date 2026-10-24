@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#14213D">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-<script>try{var t=localStorage.getItem('oa-theme');if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark')document.documentElement.classList.add('is-dark');}catch(e){}</script>
+<script>(function(){var d=document.documentElement,m;try{m=localStorage.getItem('oa-theme');}catch(e){}if(m!=='dark'&&m!=='light'){d.classList.add('is-auto');m=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}d.setAttribute('data-theme',m);if(m==='dark')d.classList.add('is-dark');})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
@@ -17,17 +17,20 @@
 <link rel="stylesheet" href="assets/css/about.css">
 </head>
 <body class="inner">
-<div class="ambient" aria-hidden="true"></div>
+<canvas class="threads" aria-hidden="true"></canvas>
 
 <header class="top">
   <div class="wrap top-row">
-    <a class="home-link" href="./" aria-label="Oluwaseyi Ashiru, home"><span class="halo"><img src="assets/img/icon-photo-sm.webp" width="160" height="161" alt=""></span></a>
-    <nav aria-label="Main">
+    <a class="home-link" href="./" aria-label="Oluwaseyi Ashiru, home"><img class="logo-day" src="assets/img/logo-photo-full.webp" width="720" height="280" alt="Oluwaseyi Ashiru — Making Knowledge Usable"><img class="logo-night" src="assets/img/logo-night-full.webp" width="720" height="253" alt="Oluwaseyi Ashiru — Making Knowledge Usable"></a>
+    <div class="top-right">
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    <nav aria-label="Main" id="site-nav">
       <a href="start.html">Start</a>
       <a href="commit.html">Next level</a>
       <a href="about.html" aria-current="page">About</a>
-      <button data-orbit-toggle></button>
     </nav>
+    <button data-orbit-toggle></button>
+    </div>
   </div>
 </header>
 
@@ -40,15 +43,18 @@
         <p class="a-role">Teacher · Builder · Priest</p>
       </div>
       <div class="portrait" id="portrait">
-        <div class="p-orbit" aria-hidden="true">
-          <span class="p-chip" style="--a:0deg">Maths</span>
-          <span class="p-chip" style="--a:60deg">Business</span>
-          <span class="p-chip" style="--a:120deg">Faith</span>
-          <span class="p-chip" style="--a:180deg">AI</span>
-          <span class="p-chip" style="--a:240deg">Careers</span>
-          <span class="p-chip" style="--a:300deg">Family</span>
-        </div>
-        <img src="assets/img/portrait.webp" width="880" height="1232" alt="Oluwaseyi Ashiru in a white shirt, hand to his chin, deep in thought">
+        <svg class="p-lines" id="p-lines" aria-hidden="true"></svg>
+        <svg class="p-path" id="p-path" aria-hidden="true"></svg>
+        <div class="p-photo"><img src="assets/img/portrait.webp" width="880" height="1232" alt="Oluwaseyi Ashiru in a white shirt, hand to his chin, deep in thought"></div>
+        <ul class="p-chips" aria-label="Fields I make usable">
+          <li class="p-chip">Academics</li>
+          <li class="p-chip">Business</li>
+          <li class="p-chip">Faith</li>
+          <li class="p-chip">AI</li>
+          <li class="p-chip">Careers</li>
+          <li class="p-chip">Family</li>
+          <li class="p-chip">Money</li>
+        </ul>
       </div>
     </div>
   </section>

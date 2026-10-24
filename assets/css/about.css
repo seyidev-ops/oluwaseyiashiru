@@ -6,21 +6,24 @@ section { position: relative; }
 .a-lede { font-size: 1.2rem; color: var(--muted); max-width: 40ch; margin-top: 22px; }
 .a-role { font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; color: var(--gold-ink); margin-top: 8px; }
 
-.portrait { position: relative; width: min(100%, 420px); margin-inline: auto; aspect-ratio: 4 / 5; --r: min(240px, 46vw); }
-.portrait img { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 999px 999px 32px 32px; box-shadow: 0 40px 80px -40px rgba(20, 33, 61, .55); }
-.p-orbit { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: 3; animation: spin 46s linear infinite; }
+.portrait { position: relative; width: min(100%, 520px); aspect-ratio: 1 / 1; margin-inline: auto; }
+.p-photo {
+  position: absolute; inset: 17%; z-index: 2; border-radius: 50%; overflow: hidden;
+  box-shadow: 0 0 0 3px #D4A24C, 0 0 0 12px color-mix(in srgb, #D4A24C 14%, transparent), 0 40px 80px -36px rgba(20, 33, 61, .6);
+  transition: transform .5s var(--ease);
+}
+.p-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 14%; transform: scale(1.08); transition: transform .6s var(--ease); }
+.portrait:hover .p-photo img { transform: scale(1.14); }
+.p-path, .p-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.p-path { z-index: 1; }
+.p-lines { z-index: 3; }
+.p-chips { list-style: none; margin: 0; padding: 0; position: absolute; inset: 0; }
 .p-chip {
-  position: absolute; left: 0; top: 0; white-space: nowrap;
-  font-size: .78rem; font-weight: 600; letter-spacing: .08em; padding: 7px 14px; border-radius: 999px;
-  background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--rule), 0 10px 24px -14px rgba(20, 33, 61, .5);
-  transform: translate(-50%, -50%) rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a)));
-  animation: counter 46s linear infinite;
+  position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform, opacity;
+  font-size: .82rem; font-weight: 600; letter-spacing: .06em; padding: 8px 14px; border-radius: 999px;
+  background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--rule), 0 12px 26px -14px rgba(20, 33, 61, .55);
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes counter {
-  from { transform: translate(-50%, -50%) rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a))) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a))) rotate(-360deg); }
-}
+.p-chip::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #D4A24C; margin-right: 8px; vertical-align: 1px; }
 
 .a-story { padding-block: 72px; background: var(--surface); transition: background-color .6s; }
 .a-story-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; }
@@ -72,8 +75,8 @@ section { position: relative; }
 
 @media (max-width: 880px) {
   .a-hero-grid, .a-story-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
-  .portrait { width: min(78%, 360px); --r: min(200px, 44vw); }
+  .portrait { width: min(100%, 440px); }
   .use { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .brk { grid-template-columns: minmax(0, 1fr); gap: 6px; }
 }
-@media (max-width: 520px) { .p-chip { font-size: .68rem; padding: 5px 10px; } }
+@media (max-width: 520px) { .p-chip { font-size: .7rem; padding: 6px 10px; } }
