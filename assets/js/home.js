@@ -15,6 +15,7 @@
     count: function (W) { return W < 700 ? 16 : 32; },
     center: coreCenter,
     inner: function () { return core.offsetWidth * 0.74; },
+    clear: function () { return core.offsetWidth * 0.56; },
     speedMul: function () { return hovering ? 0.3 : 1; }
   });
 

@@ -428,6 +428,7 @@
   });
   document.getElementById('restart').addEventListener('click', function () {
     answers = {}; fileObj = null; step = 0; result.hidden = true; wizard.hidden = false; engine.hidden = true;
+    document.getElementById('intro').hidden = true; document.querySelector('.wiz-head').hidden = false; form.hidden = false;
     document.getElementById('resume').hidden = true;
     stage.innerHTML = ''; render(1);
   });
@@ -439,5 +440,18 @@
     document.getElementById('resume-btn').addEventListener('click', function () { answers = saved.answers; build(false); });
   }
 
-  render(0);
+  /* The opening line flips away into the first question */
+  var intro = document.getElementById('intro'), head = document.querySelector('.wiz-head');
+  var goBtn = document.getElementById('intro-go');
+  document.querySelector('.intro-sub').textContent = 'Seminars, sermons, videos, AI answers: you\u2019ve heard plenty. ' + (['', '', '', '', '', '', 'Six', 'Seven', 'Eight'][QUESTIONS.length] || QUESTIONS.length) + ' short questions turn one of them into steps you can take today.';
+  function begin() {
+    function show() { intro.hidden = true; head.hidden = false; form.hidden = false; render(0); var t = stage.querySelector('input, textarea'); if (t) t.focus({ preventScroll: true }); }
+    if (reduce || !intro.animate) return show();
+    intro.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'perspective(900px) rotateX(70deg) translateY(-30px)' }],
+      { duration: 420, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' }).onfinish = function () {
+      show();
+      form.animate([{ opacity: 0, transform: 'perspective(900px) rotateX(-60deg) translateY(30px)' }, { opacity: 1, transform: 'none' }], { duration: 520, easing: 'cubic-bezier(.2,.7,.2,1)' });
+    };
+  }
+  goBtn.addEventListener('click', begin);
 })();

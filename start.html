@@ -13,8 +13,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=20261024g">
-<link rel="stylesheet" href="assets/css/start.css?v=20261024g">
+<link rel="stylesheet" href="assets/css/site.css?v=20261024h">
+<link rel="stylesheet" href="assets/css/start.css?v=20261024h">
 </head>
 <body class="inner">
 <canvas class="threads" aria-hidden="true"></canvas>
@@ -37,8 +37,13 @@
 <main class="inner-main">
   <div class="wrap">
 
-    <section class="wizard" id="wizard" aria-labelledby="wiz-q">
-      <div class="wiz-head">
+    <section class="wizard" id="wizard" aria-labelledby="intro-title">
+      <div class="intro" id="intro">
+        <h1 class="intro-title" id="intro-title">You already know enough.</h1>
+        <p class="intro-sub">Seminars, sermons, videos, AI answers: you've heard plenty. Eight short questions turn one of them into steps you can take today.</p>
+        <button class="btn btn-gold intro-go" type="button" id="intro-go">Make it usable</button>
+      </div>
+      <div class="wiz-head" hidden>
         <div class="progress" aria-hidden="true">
           <svg viewBox="0 0 60 60"><circle class="p-ring" cx="30" cy="30" r="26"/><circle class="p-arc" id="p-arc" cx="30" cy="30" r="26"/><circle class="p-dot" id="p-dot" cx="56" cy="30" r="4"/></svg>
         </div>
@@ -50,7 +55,7 @@
         <button class="btn btn-line" id="resume-btn" type="button">See my plan</button>
       </div>
 
-      <form id="wiz-form" novalidate>
+      <form id="wiz-form" novalidate hidden>
         <div class="q-stage" id="q-stage"></div>
         <p class="q-error" id="q-error" role="alert" hidden></p>
         <div class="wiz-nav">
@@ -97,21 +102,16 @@
 </main>
 
 <footer class="foot" aria-label="Site footer">
-  <div class="marquee m-big" aria-hidden="true"><div class="m-track"><span>Now use it.</span><span>Making knowledge usable.</span><span>Now use it.</span><span>Making knowledge usable.</span><span>Now use it.</span><span>Making knowledge usable.</span></div></div>
-  <div class="marquee m-small" aria-hidden="true"><div class="m-track"><span>Academics</span><span>Business</span><span>Faith</span><span>AI</span><span>Careers</span><span>Family</span><span>Money</span><span>Health</span><span>Creative work</span><span>Skills and trades</span><span>Leadership</span><span>Academics</span><span>Business</span><span>Faith</span><span>AI</span><span>Careers</span><span>Family</span><span>Money</span><span>Health</span><span>Creative work</span><span>Skills and trades</span><span>Leadership</span></div></div>
+  <div class="marquee m-big" aria-hidden="true"><div class="m-track"><span>Academics</span><span>Business</span><span>Faith</span><span>AI and tech</span><span>Careers</span><span>Family</span><span>Personal money</span><span>Health</span><span>Creative work</span><span>Skills and trades</span><span>Leadership</span><span>Academics</span><span>Business</span><span>Faith</span><span>AI and tech</span><span>Careers</span><span>Family</span><span>Personal money</span><span>Health</span><span>Creative work</span><span>Skills and trades</span><span>Leadership</span></div></div>
   <div class="wrap foot-row">
-    <p class="foot-line">You already know enough. <a href="start.html">Make it usable</a></p>
-    <ul class="foot-contact">
-      <li><span class="fc-k">WhatsApp</span> <span class="fc-v">+2347033134979</span></li>
-      <li><span class="fc-k">Email</span> <span class="fc-v">info@oluwaseyiashiru.com</span></li>
-      <li><span class="fc-k">Web</span> <span class="fc-v">oluwaseyiashiru.com</span></li>
-    </ul>
     <p class="foot-small">© <span id="year">2026</span> Oluwaseyi Ashiru. All rights reserved.</p>
+    <nav class="foot-links" aria-label="Legal"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
+    <div class="foot-social" data-social></div>
   </div>
 </footer>
 
-<script src="assets/js/core.js?v=20261024g"></script>
-<script src="assets/js/config.js?v=20261024g"></script>
-<script src="assets/js/start.js?v=20261024g"></script>
+<script src="assets/js/config.js?v=20261024h"></script>
+<script src="assets/js/core.js?v=20261024h"></script>
+<script src="assets/js/start.js?v=20261024h"></script>
 </body>
 </html>

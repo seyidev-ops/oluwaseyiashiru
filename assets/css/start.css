@@ -119,3 +119,10 @@
 .fp-verse { font-family: var(--display); font-size: 1.15rem; border-left: 3px solid #D4A24C; padding-left: 14px; margin: 24px 0; }
 .fp-sign { font-family: var(--display); font-size: 1.6rem; text-align: center; margin: 28px 0 16px; }
 #pdf-dl { margin-top: 6px; }
+
+/* Opening line */
+.intro { padding-block: 40px 24px; transform-origin: top center; }
+.intro-title { font-size: clamp(2.8rem, 8vw, 5.4rem); font-weight: 600; line-height: 1.02; letter-spacing: -0.02em; }
+.intro-sub { font-size: 1.15rem; color: var(--muted); max-width: 46ch; margin: 22px 0 30px; }
+.intro-go { min-height: 60px; padding: 0 34px; font-size: 1.05rem; }
+#wiz-form { transform-origin: top center; }

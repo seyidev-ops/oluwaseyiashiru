@@ -52,6 +52,34 @@
     applyTheme();
   }
 
+  /* ---------------- Social icons (links come from config.js) ---------------- */
+  var ICONS = {
+    whatsapp: ['WhatsApp', '<path d="M4 20l1.3-3.9A8 8 0 1 1 8 19l-4 1z"/><path d="M9 9.5c.3 2.6 2.4 4.9 5 5.5l1.2-1.3 2 1-.6 1.6c-3.8.3-8-3.6-8.1-7.6l1.5-.8 1.1 1.9z"/>'],
+    email: ['Email', '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6.5 8.5-6.5"/>'],
+    facebook: ['Facebook', '<path d="M14 21v-8h3l.5-3.5H14V7.6c0-1 .4-1.7 1.8-1.7h1.8V2.8C17 2.7 16 2.6 15 2.6c-2.8 0-4.5 1.6-4.5 4.6v2.3h-3V13h3v8"/>'],
+    instagram: ['Instagram', '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/>'],
+    linkedin: ['LinkedIn', '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10.5V17M8 7.3v.2M12 17v-6.5M12 13.2c0-1.6 1.1-2.8 2.5-2.8S17 11.4 17 13v4"/>'],
+    x: ['X', '<path d="M4 4l16 16M20 4L4 20"/>'],
+    youtube: ['YouTube', '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none"/>'],
+    tiktok: ['TikTok', '<path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.5 2.7 2.3 4.3 5 4.5"/>']
+  };
+  function mountSocial() {
+    var L = window.OA_LINKS || {};
+    document.querySelectorAll('[data-social]').forEach(function (box) {
+      var withLabels = box.getAttribute('data-social') === 'labels';
+      box.innerHTML = '';
+      Object.keys(ICONS).forEach(function (k) {
+        if (!L[k]) return;
+        var a = document.createElement('a');
+        a.href = L[k]; a.className = 'social-link';
+        if (!/^mailto:/.test(L[k])) { a.target = '_blank'; a.rel = 'noopener'; }
+        a.setAttribute('aria-label', ICONS[k][0]);
+        a.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + ICONS[k][1] + '</svg>' + (withLabels ? '<span>' + ICONS[k][0] + '</span>' : '');
+        box.appendChild(a);
+      });
+    });
+  }
+
   /* ---------------- Mobile menu ---------------- */
   function mountMenu() {
     var btn = document.querySelector('.menu-btn'), nav = document.getElementById('site-nav');
@@ -225,6 +253,7 @@
     var center = this.localCenter(B);
     var px = pointer.x - B.x, py = pointer.y - B.y;
     var R = this.o.flee || (W < 700 ? 110 : 160);
+    var clearR = this.o.clear ? this.o.clear() : 0;
     var pActive = pointer.active && (now - pointer.t < 2500 || !matchMedia('(hover: none)').matches);
     this.panic *= 0.985;
     var speed = (1 + this.panic * 2.5) * (this.o.speedMul ? this.o.speedMul() : 1);
@@ -257,11 +286,19 @@
         f.alpha = 1 - e;
       }
       f.x = bx + f.dx; f.y = by + f.dy;
-      var sc = self.mode === 'drift' ? 1 : (0.84 + depth * 0.22) * (1 - e * 0.7);
+      var sc = 1 - e * 0.7;
       f.el.style.transform = 'translate3d(' + f.x.toFixed(1) + 'px,' + f.y.toFixed(1) + 'px,0) scale(' + sc.toFixed(3) + ')';
       if (self.mode !== 'drift') {
-        f.el.style.opacity = ((0.5 + depth * 0.5) * f.alpha).toFixed(3);
-        f.el.style.zIndex = depth > 0.55 ? 6 : 2;
+        /* never cover the portrait: a label fades out as it nears the icon, and back in as it leaves */
+        var vis = 1;
+        if (clearR) {
+          var qx = f.x + f.w / 2 - center.x, qy = f.y + f.h / 2 - center.y;
+          var gap = Math.sqrt(qx * qx + qy * qy) - clearR - f.w * 0.45;
+          vis = Math.max(0, Math.min(1, gap / 36));
+        }
+        f.el.style.opacity = (0.92 * vis * f.alpha).toFixed(3);
+        f.el.style.pointerEvents = vis < 0.2 ? 'none' : '';
+        f.el.style.zIndex = 2;
       }
     });
     if (this.o.onTick) this.o.onTick(t, dt);
@@ -297,7 +334,7 @@
   };
 
   function ready() {
-    mountToggles(); mountMenu();
+    mountToggles(); mountMenu(); mountSocial();
     var th = document.querySelector('canvas.threads'); if (th && th.getContext) Threads(th);
     var y = document.getElementById('year'); if (y) y.textContent = new Date().getFullYear();
   }

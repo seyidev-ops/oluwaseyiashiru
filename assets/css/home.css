@@ -20,7 +20,7 @@ html.is-dark .wm-night { display: block; }
 
 .zone { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
 .field { position: absolute; inset: 0; }
-body.home .frag { font-size: .88rem; box-shadow: 0 6px 22px -14px rgba(20, 33, 61, .35); cursor: pointer; }
+body.home .frag { font-size: .8rem; box-shadow: 0 6px 22px -14px rgba(20, 33, 61, .35); cursor: pointer; }
 
 .core {
   position: absolute; left: 50%; top: 50%; z-index: 5;
@@ -46,12 +46,15 @@ body.home .frag { font-size: .88rem; box-shadow: 0 6px 22px -14px rgba(20, 33, 6
   padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   border-top: 1px solid var(--rule); background: var(--bg); font-size: .8rem; color: var(--muted);
 }
-.home-foot a { font-weight: 600; color: var(--ink); padding: 8px 4px; }
+.home-links { display: flex; gap: 14px; }
+.home-foot a { font-weight: 600; color: var(--ink); padding: 8px 2px; text-decoration: none; }
+.home-foot a:hover { color: var(--gold-ink); }
+.home-foot .social-link { padding: 0; }
 
 @media (max-width: 640px) {
   .home-top { gap: 10px; padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(10px, env(safe-area-inset-right, 0px)); }
   .wordmark img { width: 112px; }
   .home-line { font-size: .86rem; }
-  body.home .frag { font-size: .72rem; }
+  body.home .frag { font-size: .7rem; }
   .core-words text { font-size: 15px; }
 }
