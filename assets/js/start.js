@@ -190,7 +190,8 @@
   function advance() {
     if (!valid()) return;
     if (step < QUESTIONS.length - 1) { step++; render(1); }
-    else { build(true); if (ENDPOINT) submit(); }
+    else if (ENDPOINT) { waiting(); submit(); }
+    else build(true);
   }
 
   form.addEventListener('submit', function (e) { e.preventDefault(); advance(); });
@@ -317,6 +318,33 @@
     document.getElementById('after').animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: 2700, fill: 'backwards' });
   }
 
+  /* With the engine on, the visitor waits for the real pack instead of a template card */
+  function waiting() {
+    wizard.hidden = true; result.hidden = false;
+    card.hidden = true; document.getElementById('after').hidden = true;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  function fromPack(p) {
+    var s = p.source || {}, F = FIELD[answers.field] || FIELD.other;
+    current = {
+      source: (s.title ? s.title + (s.creator ? ' · ' + s.creator : '') : (TYPE_LABEL[answers.type] || 'Your entry')) + ' · ' + F.label,
+      title: p.title || 'Your USE Pack',
+      steps: (p.plan || []).slice(0, 3).map(function (x) { return [String(x.step || '').replace(/^\d+\.\s*/, ''), x.what || '']; }),
+      note: p.note_to_visitor || '',
+      first: p.first_step ? p.first_step.action + (p.first_step.time ? ' (' + p.first_step.time + ')' : '') : ''
+    };
+    document.getElementById('u-source').textContent = current.source;
+    document.getElementById('card-title').textContent = current.title;
+    document.getElementById('u-note').textContent = current.note;
+    document.getElementById('u-first').textContent = current.first;
+    var ol = document.getElementById('u-steps'); ol.innerHTML = '';
+    current.steps.forEach(function (st) { var li = el('li'), d = el('div'); d.appendChild(el('strong', null, st[0])); d.appendChild(el('span', null, st[1])); li.appendChild(d); ol.appendChild(li); });
+    done.checked = false; afterDone.hidden = true; card.classList.remove('is-done');
+    card.hidden = false; document.getElementById('after').hidden = false;
+    if (!reduce && card.animate) card.animate([{ opacity: 0, transform: 'translateY(30px) scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 650, easing: 'cubic-bezier(.2,.7,.2,1)' });
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+
   /* I've done it: a small celebration, point B reached */
   done.addEventListener('change', function () {
     card.classList.toggle('is-done', done.checked);
@@ -367,8 +395,8 @@
       clearInterval(timer); engine.classList.remove('working');
       if (!out.ok) throw new Error(out.error || 'failed');
       engine.classList.add('done');
-      engineMsg.textContent = 'Your full USE Pack is ready below. A PDF copy is on its way to ' + answers.email + '.';
-      renderPack(out.pack);
+      engineMsg.textContent = 'Your full USE Pack is below. A PDF copy is on its way to ' + answers.email + '.';
+      fromPack(out.pack); renderPack(out.pack);
       if (out.pdf) {
         var bytes = atob(out.pdf), arr = new Uint8Array(bytes.length);
         for (var k = 0; k < bytes.length; k++) arr[k] = bytes.charCodeAt(k);
@@ -378,7 +406,8 @@
       save({ packId: out.id });
     }).catch(function (e) {
       clearInterval(timer); engine.classList.remove('working'); engine.classList.add('failed');
-      var m = e && e.message && e.message !== 'failed' && e.message.length > 12 ? e.message : 'We couldn’t make your full pack right now. Your first step above still works.';
+      var m = e && e.message && e.message !== 'failed' && e.message.length > 12 ? e.message : 'We couldn’t read it right now, so here is a quick first step from your answers.';
+      card.hidden = false; document.getElementById('after').hidden = false; build(false);
       engineMsg.textContent = m + ' You can also send your link on WhatsApp: +2347033134979.';
     });
   }
