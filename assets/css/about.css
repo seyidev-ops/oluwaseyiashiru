@@ -1,0 +1,79 @@
+/* About: the portrait with fields circling it, then the system told as a journey you scroll through */
+section { position: relative; }
+.a-hero { padding-block: 40px 80px; overflow-x: clip; }
+.a-hero-grid { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 56px; align-items: center; }
+.a-hero h1 { font-size: clamp(2.8rem, 7.4vw, 5.6rem); font-weight: 600; }
+.a-lede { font-size: 1.2rem; color: var(--muted); max-width: 40ch; margin-top: 22px; }
+.a-role { font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; color: var(--gold-ink); margin-top: 8px; }
+
+.portrait { position: relative; width: min(100%, 420px); margin-inline: auto; aspect-ratio: 4 / 5; --r: min(240px, 46vw); }
+.portrait img { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 999px 999px 32px 32px; box-shadow: 0 40px 80px -40px rgba(20, 33, 61, .55); }
+.p-orbit { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: 3; animation: spin 46s linear infinite; }
+.p-chip {
+  position: absolute; left: 0; top: 0; white-space: nowrap;
+  font-size: .78rem; font-weight: 600; letter-spacing: .08em; padding: 7px 14px; border-radius: 999px;
+  background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--rule), 0 10px 24px -14px rgba(20, 33, 61, .5);
+  transform: translate(-50%, -50%) rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a)));
+  animation: counter 46s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes counter {
+  from { transform: translate(-50%, -50%) rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a))) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a))) rotate(-360deg); }
+}
+
+.a-story { padding-block: 72px; background: var(--surface); transition: background-color .6s; }
+.a-story-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; }
+.a-story h2 { font-size: clamp(2rem, 4.4vw, 3.2rem); }
+.a-story p { max-width: 60ch; }
+
+.a-breaks, .a-use, .a-journey { padding-block: 96px 24px; }
+.a-breaks h2, .a-use h2, .a-journey h2 { font-size: clamp(2rem, 4.4vw, 3.2rem); max-width: 20ch; }
+.a-sub { color: var(--muted); font-size: 1.1rem; margin-top: 14px; max-width: 52ch; }
+
+.breaks { list-style: none; padding: 0; margin: 40px 0 0; border-top: 1px solid var(--rule); }
+.brk {
+  width: 100%; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: baseline; text-align: left;
+  padding: 22px 4px; border: 0; border-bottom: 1px solid var(--rule); background: transparent; color: var(--ink); cursor: pointer; font: inherit;
+  transition: background-color .3s, padding .3s var(--ease);
+}
+.brk:hover { background: color-mix(in srgb, var(--gold) 9%, transparent); padding-inline: 16px; }
+.brk-name { font-family: var(--display); font-size: clamp(1.3rem, 2.6vw, 1.7rem); position: relative; width: fit-content; }
+.brk-name::after { content: ""; position: absolute; left: 0; right: 0; top: 55%; height: 3px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--ease); }
+.brk.fixed .brk-name::after { transform: scaleX(1); }
+.brk.fixed .brk-name { color: var(--muted); }
+.brk-text { color: var(--muted); font-variant-ligatures: none; }
+.brk.fixed .brk-text { color: var(--ink); font-weight: 500; }
+
+.use { list-style: none; padding: 0; margin: 48px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px; }
+.use-letter { width: 130px; height: 140px; overflow: visible; }
+.use-letter text { font-family: var(--display); font-weight: 600; font-size: 140px; fill: var(--gold); stroke: var(--gold); stroke-width: 2; }
+.use-letter.draw text { animation: draw 2.2s var(--ease) both; }
+@keyframes draw { 0% { stroke-dasharray: 600; stroke-dashoffset: 600; fill-opacity: 0; } 70% { stroke-dashoffset: 0; fill-opacity: 0; } 100% { stroke-dasharray: 600; stroke-dashoffset: 0; fill-opacity: 1; } }
+.use h3 { font-size: 1.6rem; margin: 10px 0 8px; }
+.use p { color: var(--muted); max-width: 32ch; }
+
+.journey { position: relative; margin-top: 48px; padding-left: 56px; }
+.j-line { position: absolute; left: 18px; top: 8px; bottom: 8px; width: 3px; background: var(--rule); border-radius: 3px; }
+.j-fill { position: absolute; left: 0; top: 0; width: 100%; height: 0; background: var(--gold); border-radius: 3px; }
+.j-dot { position: absolute; left: 50%; top: 0; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 6px color-mix(in srgb, var(--gold) 25%, transparent); }
+.j-steps { list-style: none; padding: 0; margin: 0; counter-reset: j; display: grid; gap: 44px; }
+.j-steps li { counter-increment: j; position: relative; max-width: 620px; opacity: .45; transition: opacity .5s, transform .5s var(--ease); }
+.j-steps li.lit { opacity: 1; transform: translateX(6px); }
+.j-steps li::before { content: counter(j); position: absolute; left: -56px; top: 0; width: 39px; height: 39px; border-radius: 50%; display: grid; place-items: center; font: 600 .95rem var(--body); background: var(--bg); color: var(--muted); box-shadow: inset 0 0 0 2px var(--rule); transition: background-color .4s, color .4s, box-shadow .4s; }
+.j-steps li.lit::before { background: #14213D; color: #D4A24C; box-shadow: none; }
+.j-steps h3 { font-size: 1.5rem; margin-bottom: 6px; }
+.j-steps p { color: var(--muted); margin: 0; }
+
+.a-verse { padding-block: 96px 0; text-align: center; }
+.a-verse blockquote { margin: 0 auto 32px; max-width: 30ch; }
+.a-verse blockquote p { font-family: var(--display); font-size: clamp(1.6rem, 3.6vw, 2.4rem); line-height: 1.3; margin-bottom: 12px; }
+.a-verse cite { font-style: normal; color: var(--muted); font-size: .95rem; }
+
+@media (max-width: 880px) {
+  .a-hero-grid, .a-story-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .portrait { width: min(78%, 360px); --r: min(200px, 44vw); }
+  .use { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .brk { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+}
+@media (max-width: 520px) { .p-chip { font-size: .68rem; padding: 5px 10px; } }
