@@ -26,6 +26,12 @@
     { id: 'time', kind: 'choice', compact: true, q: 'How much time can you give today?', opts: [
       ['15', '15 minutes'], ['30', '30 minutes'], ['60', 'An hour']] }
   ];
+  var ENDPOINT = (window.OA_ENDPOINT || '').trim();
+  var fileObj = null, MAX_MB = 25;
+  if (ENDPOINT) {
+    QUESTIONS.splice(3, 0, { id: 'source', kind: 'source', q: 'Share it with us, if you have it.' });
+    QUESTIONS.push({ id: 'contact', kind: 'contact', q: 'Where should we send your full USE Pack?' });
+  }
 
   var answers = {}, step = 0;
   var stage = document.getElementById('q-stage');
@@ -76,6 +82,10 @@
         list.appendChild(lab);
       });
       box.appendChild(list);
+    } else if (Q.kind === 'source') {
+      renderSource(box);
+    } else if (Q.kind === 'contact') {
+      renderContact(box);
     } else {
       var id = 'q-' + Q.id;
       var lab2 = el('label', 'visually-hidden', typeof Q.q === 'string' ? Q.q : Q.q[type]); lab2.setAttribute('for', id);
@@ -117,11 +127,61 @@
     progress();
   }
 
+  function field(box, id, label, type, ph, help) {
+    var wrap = el('div', 'q-field');
+    var l = el('label', 'q-label', label); l.setAttribute('for', id);
+    var i = document.createElement('input'); i.id = id; i.type = type; i.className = 'q-input q-input-sm'; if (ph) i.placeholder = ph;
+    i.value = answers[id.replace('q-', '')] || '';
+    i.addEventListener('input', function () { answers[id.replace('q-', '')] = i.value; hideErr(); });
+    wrap.appendChild(l); wrap.appendChild(i);
+    if (help) wrap.appendChild(el('p', 'q-help', help));
+    box.appendChild(wrap); return i;
+  }
+  function renderSource(box) {
+    box.appendChild(el('p', 'q-sub', 'A link or the video itself lets us read it fully. You can skip this step.'));
+    var link = field(box, 'q-link', 'Paste a link', 'url', 'https://youtube.com/watch?v=…', 'YouTube links are read in full. Facebook, Instagram and TikTok links can’t be opened automatically, so upload the video instead.');
+    link.setAttribute('inputmode', 'url');
+    var wrap = el('div', 'q-field');
+    var l = el('label', 'q-label', 'Or upload a video or audio file (up to ' + MAX_MB + ' MB)'); l.setAttribute('for', 'q-file');
+    var f = document.createElement('input'); f.type = 'file'; f.id = 'q-file'; f.className = 'q-file'; f.accept = 'video/*,audio/*';
+    var picked = el('p', 'q-help', fileObj ? 'Selected: ' + fileObj.name : '');
+    f.addEventListener('change', function () {
+      hideErr(); fileObj = f.files && f.files[0] || null;
+      if (fileObj && fileObj.size > MAX_MB * 1024 * 1024) { showErr('That file is ' + Math.round(fileObj.size / 1048576) + ' MB. The limit is ' + MAX_MB + ' MB, so share a YouTube or Google Drive link instead.'); fileObj = null; f.value = ''; }
+      picked.textContent = fileObj ? 'Selected: ' + fileObj.name + ' (' + (fileObj.size / 1048576).toFixed(1) + ' MB)' : '';
+    });
+    wrap.appendChild(l); wrap.appendChild(f); wrap.appendChild(picked); box.appendChild(wrap);
+    box.appendChild(el('p', 'q-where', 'Where it goes: your link or file is saved in Oluwaseyi Ashiru’s Google Drive, used only to make your pack and follow up with you.'));
+  }
+  function renderContact(box) {
+    box.appendChild(el('p', 'q-sub', 'Your first step appears straight away. Your full USE Pack, made from what you shared, follows as a PDF.'));
+    field(box, 'q-name', 'Your name', 'text', 'Ada Okafor').setAttribute('autocomplete', 'name');
+    field(box, 'q-email', 'Email (your PDF is sent here)', 'email', 'ada@example.com').setAttribute('autocomplete', 'email');
+    field(box, 'q-whatsapp', 'WhatsApp number (optional)', 'tel', '+234 …').setAttribute('autocomplete', 'tel');
+    var hp = document.createElement('input'); hp.type = 'text'; hp.name = 'website'; hp.id = 'q-website'; hp.tabIndex = -1; hp.autocomplete = 'off'; hp.className = 'hp'; hp.setAttribute('aria-hidden', 'true'); hp.addEventListener('input', function () { answers.website = hp.value; });
+    box.appendChild(hp);
+    var c = el('label', 'q-consent'); var cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'q-consent'; cb.checked = !!answers.consent;
+    cb.addEventListener('change', function () { answers.consent = cb.checked; hideErr(); });
+    c.appendChild(cb); c.appendChild(el('span', null, 'I agree that my answers, contact details and anything I shared are saved to Oluwaseyi Ashiru’s Google account, so my pack can be made and he can follow up with me.'));
+    box.appendChild(c);
+  }
+
   function hideErr() { err.hidden = true; }
   function showErr(m) { err.textContent = m; err.hidden = false; }
 
   function valid() {
     var Q = QUESTIONS[step], v = (answers[Q.id] || '').trim();
+    if (Q.kind === 'source') {
+      var L = (answers.link || '').trim();
+      if (L && !/^https?:\/\/\S+\.\S+/i.test(L)) { showErr('That link doesn’t look complete. It should start with https://'); return false; }
+      return true;
+    }
+    if (Q.kind === 'contact') {
+      if ((answers.name || '').trim().length < 2) { showErr('Add your name.'); return false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((answers.email || '').trim())) { showErr('Add a valid email so your pack can reach you.'); return false; }
+      if (!answers.consent) { showErr('Tick the box to agree to how your entry is used.'); return false; }
+      return true;
+    }
     if (Q.kind === 'choice' && !v) { showErr('Choose one answer to continue.'); return false; }
     if (Q.kind !== 'choice' && v.length < 3) { showErr('Write a few words so the plan fits you.'); var i = stage.querySelector('.q-input'); if (i) i.focus(); return false; }
     return true;
@@ -130,7 +190,7 @@
   function advance() {
     if (!valid()) return;
     if (step < QUESTIONS.length - 1) { step++; render(1); }
-    else build(true);
+    else { build(true); if (ENDPOINT) submit(); }
   }
 
   form.addEventListener('submit', function (e) { e.preventDefault(); advance(); });
@@ -275,6 +335,83 @@
     }
   }
 
+  /* ---------------- The full USE Pack: sent to the engine, shown here, emailed as a PDF ---------------- */
+  var engine = document.getElementById('engine'), engineMsg = document.getElementById('engine-msg'), fullpack = document.getElementById('fullpack');
+  var STAGES = ['Saving your entry', 'Reading what you shared', 'Checking what’s true', 'Putting the steps in order', 'Writing your USE Pack'];
+
+  function readFile(f) {
+    return new Promise(function (res, rej) {
+      if (!f) return res(null);
+      var r = new FileReader();
+      r.onload = function () { res({ name: f.name, mime: f.type || 'application/octet-stream', data: String(r.result).split(',')[1] }); };
+      r.onerror = function () { rej(new Error('read')); };
+      r.readAsDataURL(f);
+    });
+  }
+
+  function submit() {
+    engine.hidden = false; fullpack.innerHTML = ''; document.getElementById('pdf-dl').hidden = true;
+    engine.classList.remove('done', 'failed'); engine.classList.add('working');
+    var i = 0; engineMsg.textContent = STAGES[0] + '…';
+    var timer = setInterval(function () { i = Math.min(STAGES.length - 1, i + 1); engineMsg.textContent = STAGES[i] + '…'; }, 9000);
+    var F = FIELD[answers.field] || FIELD.other;
+    readFile(fileObj).then(function (file) {
+      var payload = {
+        name: (answers.name || '').trim(), email: (answers.email || '').trim(), whatsapp: (answers.whatsapp || '').trim(),
+        consent: !!answers.consent, website: answers.website || '',
+        type: answers.type, field: answers.field, fieldLabel: F.label, what: answers.what, want: answers.want,
+        block: answers.block, time: answers.time, link: (answers.link || '').trim(), file: file
+      };
+      return fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
+    }).then(function (r) { return r.json(); }).then(function (out) {
+      clearInterval(timer); engine.classList.remove('working');
+      if (!out.ok) throw new Error(out.error || 'failed');
+      engine.classList.add('done');
+      engineMsg.textContent = 'Your full USE Pack is ready below. A PDF copy is on its way to ' + answers.email + '.';
+      renderPack(out.pack);
+      if (out.pdf) {
+        var bytes = atob(out.pdf), arr = new Uint8Array(bytes.length);
+        for (var k = 0; k < bytes.length; k++) arr[k] = bytes.charCodeAt(k);
+        var a = document.getElementById('pdf-dl');
+        a.href = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' })); a.download = out.pdfName || 'USE Pack.pdf'; a.hidden = false;
+      }
+      save({ packId: out.id });
+    }).catch(function (e) {
+      clearInterval(timer); engine.classList.remove('working'); engine.classList.add('failed');
+      var m = e && e.message && e.message !== 'failed' && e.message.length > 12 ? e.message : 'We couldn’t make your full pack right now. Your first step above still works.';
+      engineMsg.textContent = m + ' You can also send your link on WhatsApp: +2347033134979.';
+    });
+  }
+
+  function renderPack(p) {
+    fullpack.innerHTML = '';
+    function h(t) { fullpack.appendChild(el('h2', 'fp-h', t)); }
+    function table(head, rows) {
+      var box = el('div', 'fp-scroll'), t = el('table', 'fp-table'), tr = el('tr');
+      head.forEach(function (x) { tr.appendChild(el('th', null, x)); }); if (head.join('')) t.appendChild(tr);
+      rows.forEach(function (r) { var row = el('tr'); r.forEach(function (c) { row.appendChild(el('td', null, c == null ? '' : String(c))); }); t.appendChild(row); });
+      box.appendChild(t); fullpack.appendChild(box);
+    }
+    fullpack.appendChild(el('p', 'fp-kicker', 'Your full USE Pack'));
+    fullpack.appendChild(el('h2', 'fp-title', p.title || 'Your USE Pack'));
+    if (p.note_to_visitor) fullpack.appendChild(el('p', 'fp-note', p.note_to_visitor));
+    var s = p.source || {};
+    if (s.title || s.creator) { h('The source'); table(['', ''], [['Source', s.title], ['Made by', s.creator], ['Length', s.length], ['Who this is for', s.for_whom], ['Status', s.status]].filter(function (r) { return r[1]; })); }
+    if (p.says && p.says.length) { h('What it says'); var ol = el('ol', 'fp-list'); p.says.forEach(function (x) { ol.appendChild(el('li', null, x)); }); fullpack.appendChild(ol); }
+    if (p.checks && p.checks.length) { h('Is it true?'); table(['Claim', 'Verdict', 'Why'], p.checks.map(function (c) { return [c.claim, c.verdict, c.why]; })); }
+    if (p.plan && p.plan.length) { h('The action plan'); table(['Step', 'What to do', 'Time', 'Proof you’ll have'], p.plan.map(function (c) { return [c.step, c.what, c.time, c.proof]; })); }
+    if (p.first_step) {
+      var fb = el('div', 'fp-first'); fb.appendChild(el('p', 'fp-first-label', 'Your first step today'));
+      fb.appendChild(el('p', 'fp-first-text', p.first_step.action)); fb.appendChild(el('p', 'fp-first-meta', 'Time: ' + (p.first_step.time || '') + ' · Result: ' + (p.first_step.result || '')));
+      fullpack.appendChild(fb);
+    }
+    if (p.tracker && p.tracker.length) { h('Seven-day tracker'); table(['Day', 'Morning', 'Evening'], p.tracker.map(function (t) { return [t.day, t.morning, t.evening]; })); }
+    if (p.stuck && p.stuck.length) { h('If you get stuck'); table(['If this happens', 'Do this'], p.stuck.map(function (c) { return [c.problem, c.fix]; })); }
+    if (p.faith_note) fullpack.appendChild(el('blockquote', 'fp-verse', p.faith_note));
+    fullpack.appendChild(el('p', 'fp-sign', 'Now use it.'));
+    if (!reduce && fullpack.animate) fullpack.animate([{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.2,.7,.2,1)' });
+  }
+
   /* Copy, restart */
   document.getElementById('copy').addEventListener('click', function () {
     var msg = document.getElementById('copy-msg');
@@ -290,7 +427,7 @@
     else fallback();
   });
   document.getElementById('restart').addEventListener('click', function () {
-    answers = {}; step = 0; result.hidden = true; wizard.hidden = false;
+    answers = {}; fileObj = null; step = 0; result.hidden = true; wizard.hidden = false; engine.hidden = true;
     document.getElementById('resume').hidden = true;
     stage.innerHTML = ''; render(1);
   });

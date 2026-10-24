@@ -10,3 +10,7 @@ A static site (HTML, CSS, vanilla JS), served by GitHub Pages. No build step.
 - `assets/img/` — approved logo exports, icons and portrait (from the brand package)
 
 Brand rules: see the Oluwaseyi Ashiru Brand Guidelines (v1.0). Never redraw or recolour the logo.
+
+## USE Pack engine
+
+`backend/` holds the Google Apps Script that turns each Start-page entry into a USE Pack (Drive, Sheet, Gemini, PDF, email). Setup: `backend/SETUP.md`. The site switches it on when `assets/js/config.js` has the web app URL.
