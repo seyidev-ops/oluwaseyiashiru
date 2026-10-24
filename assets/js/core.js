@@ -182,27 +182,37 @@
     });
     this.layout();
   };
+  /* Size of the area the field lives in (the container, not the whole window) */
+  Field.prototype.box = function () { var r = this.c.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width || window.innerWidth, h: r.height || window.innerHeight }; };
+  Field.prototype.localCenter = function (B) {
+    if (!this.o.center) return { x: B.w / 2, y: B.h / 2 };
+    var c = this.o.center(); return { x: c.x - B.x, y: c.y - B.y };
+  };
+  /* Orbit mode: evenly spaced rings. Every ring turns as one, so the spacing never bunches up. */
   Field.prototype.layout = function () {
-    var W = window.innerWidth, H = window.innerHeight, n = this.frags.length;
+    var B = this.box(), W = B.w, H = B.h, n = this.frags.length;
+    var rings = W < 700 ? 3 : 4, perRing = Math.ceil(n / rings);
+    var inner = this.o.inner ? this.o.inner() : Math.min(W, H) * 0.22;
     var s = 3, r = function () { s = (s * 9301 + 49297) % 233280; return s / 233280; };
     this.frags.forEach(function (f, i) {
       f.w = f.el.offsetWidth; f.h = f.el.offsetHeight;
-      // orbit parameters
-      f.theta = (i / n) * Math.PI * 2 + r() * 0.6;
-      var band = 0.25 + (i % 5) * 0.075 + r() * 0.05;
-      f.rx = W * band * (W < 700 ? 1.1 : 1);
-      f.ry = H * (band * 0.86 + 0.02);
-      f.omega = (0.045 + r() * 0.09) * (i % 3 === 0 ? -1 : 1);
+      var ring = i % rings, slot = Math.floor(i / rings);
+      var k = (ring + 1) / rings;                       // 0..1, inner to outer
+      f.ring = ring;
+      f.theta = slot / perRing * Math.PI * 2 + ring * 0.7;
+      f.rx = inner + 40 + (W / 2 - inner - 40) * (0.15 + 0.85 * k) - f.w * 0.15;
+      f.ry = inner * 0.75 + 20 + (H / 2 - inner * 0.75 - 30) * (0.2 + 0.8 * k);
+      f.omega = (0.07 - ring * 0.01) * (ring % 2 ? -1 : 1);
       f.tilt = r() * Math.PI * 2;
-      f.wob = 6 + r() * 14; f.wsp = 0.4 + r() * 0.6;
-      // drift parameters
+      f.wob = 4 + r() * 6; f.wsp = 0.4 + r() * 0.5;
       f.bx = r() * W; f.by = r() * H;
       f.sx = (r() - 0.5) * 14; f.sy = (r() - 0.5) * 10;
     });
   };
   Field.prototype.kick = function (f, power) {
+    var B = this.box(), px = pointer.x - B.x, py = pointer.y - B.y;
     var cx = f.x + f.w / 2, cy = f.y + f.h / 2;
-    var ax = cx - pointer.x, ay = cy - pointer.y, d = Math.sqrt(ax * ax + ay * ay) || 1;
+    var ax = cx - px, ay = cy - py, d = Math.sqrt(ax * ax + ay * ay) || 1;
     if (pointer.x < -999) { ax = Math.random() - 0.5; ay = Math.random() - 0.5; d = Math.sqrt(ax * ax + ay * ay) || 1; }
     f.vx += ax / d * power * 60; f.vy += ay / d * power * 60;
     this.panic = Math.min(1, this.panic + 0.25);
@@ -211,49 +221,46 @@
     var self = this;
     if (!this.running) { this.raf = 0; return; }
     var dt = Math.min(0.05, (now - (this.last || now)) / 1000); this.last = now;
-    var t = now / 1000, W = window.innerWidth, H = window.innerHeight;
-    var center = this.o.center ? this.o.center() : { x: W / 2, y: H / 2 };
+    var t = now / 1000, B = this.box(), W = B.w, H = B.h;
+    var center = this.localCenter(B);
+    var px = pointer.x - B.x, py = pointer.y - B.y;
     var R = this.o.flee || (W < 700 ? 110 : 160);
     var pActive = pointer.active && (now - pointer.t < 2500 || !matchMedia('(hover: none)').matches);
     this.panic *= 0.985;
     var speed = (1 + this.panic * 2.5) * (this.o.speedMul ? this.o.speedMul() : 1);
 
     this.frags.forEach(function (f) {
-      var bx, by, depth = 1;
+      var bx, by, depth = 1, e = 0;
       if (self.mode === 'orbit' || self.mode === 'collapse') {
         f.theta += f.omega * dt * speed;
-        var ct = Math.cos(f.theta), st = Math.sin(f.theta);
-        bx = center.x + ct * f.rx - f.w / 2;
-        by = center.y + st * f.ry + Math.sin(t * f.wsp + f.tilt) * f.wob - f.h / 2;
-        depth = 0.5 + 0.5 * Math.sin(f.theta + f.tilt); // 0 back .. 1 front
+        bx = center.x + Math.cos(f.theta) * f.rx - f.w / 2;
+        by = center.y + Math.sin(f.theta) * f.ry + Math.sin(t * f.wsp + f.tilt) * f.wob - f.h / 2;
+        depth = 0.5 + 0.5 * Math.sin(f.theta);
       } else {
         f.bx += f.sx * dt * speed; f.by += f.sy * dt * speed;
         if (f.bx < -f.w - 40) f.bx = W + 20; if (f.bx > W + 40) f.bx = -f.w - 20;
         if (f.by < -60) f.by = H + 20; if (f.by > H + 60) f.by = -40;
         bx = f.bx + Math.sin(t * 0.3 + f.i) * 12; by = f.by + Math.cos(t * 0.25 + f.i) * 10;
       }
-      // run from the pointer
       if (pActive) {
         var cx = bx + f.dx + f.w / 2, cy = by + f.dy + f.h / 2;
-        var ax = cx - pointer.x, ay = cy - pointer.y, d = Math.sqrt(ax * ax + ay * ay);
+        var ax = cx - px, ay = cy - py, d = Math.sqrt(ax * ax + ay * ay);
         if (d < R && d > 0.1) { var force = (1 - d / R) * 2600; f.vx += ax / d * force * dt; f.vy += ay / d * force * dt; }
       }
-      // spring home, damping
       f.vx += -f.dx * 3.2 * dt; f.vy += -f.dy * 3.2 * dt;
       f.vx *= Math.pow(0.12, dt); f.vy *= Math.pow(0.12, dt);
       f.dx += f.vx * dt; f.dy += f.vy * dt;
-
       if (self.mode === 'collapse') {
         f.k = Math.min(1, (f.k || 0) + dt * 1.8);
-        var e = f.k * f.k;
+        e = f.k * f.k;
         bx = bx + (center.x - f.w / 2 - bx) * e; by = by + (center.y - f.h / 2 - by) * e;
         f.alpha = 1 - e;
       }
       f.x = bx + f.dx; f.y = by + f.dy;
-      var sc = self.mode === 'drift' ? 1 : (0.78 + depth * 0.32) * (self.mode === 'collapse' ? 1 - e * 0.7 : 1);
+      var sc = self.mode === 'drift' ? 1 : (0.84 + depth * 0.22) * (1 - e * 0.7);
       f.el.style.transform = 'translate3d(' + f.x.toFixed(1) + 'px,' + f.y.toFixed(1) + 'px,0) scale(' + sc.toFixed(3) + ')';
       if (self.mode !== 'drift') {
-        f.el.style.opacity = ((0.42 + depth * 0.58) * f.alpha).toFixed(3);
+        f.el.style.opacity = ((0.5 + depth * 0.5) * f.alpha).toFixed(3);
         f.el.style.zIndex = depth > 0.55 ? 6 : 2;
       }
     });
@@ -266,12 +273,10 @@
   };
   Field.prototype.stop = function () { this.running = false; };
   Field.prototype.still = function () {
-    var W = window.innerWidth, H = window.innerHeight, self = this;
-    var center = this.o.center ? this.o.center() : { x: W / 2, y: H / 2 };
+    var B = this.box(), self = this, center = this.localCenter(B);
     this.frags.forEach(function (f) {
-      var x, y;
-      if (self.mode === 'orbit') { x = center.x + Math.cos(f.theta) * f.rx - f.w / 2; y = center.y + Math.sin(f.theta) * f.ry - f.h / 2; }
-      else { x = f.bx; y = f.by; }
+      var x = self.mode === 'orbit' ? center.x + Math.cos(f.theta) * f.rx - f.w / 2 : f.bx;
+      var y = self.mode === 'orbit' ? center.y + Math.sin(f.theta) * f.ry - f.h / 2 : f.by;
       f.el.style.transform = 'translate(' + x + 'px,' + y + 'px)';
     });
   };
