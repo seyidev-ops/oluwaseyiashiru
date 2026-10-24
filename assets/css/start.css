@@ -10,7 +10,8 @@
 .resume { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-radius: 18px; background: color-mix(in srgb, var(--gold) 14%, transparent); margin-bottom: 28px; }
 .resume p { margin: 0; font-weight: 500; }
 
-.q-stage { position: relative; min-height: 340px; }
+.q-stage { position: relative; overflow: hidden; padding: 4px 4px 8px; margin: -4px; }
+.q.leaving { pointer-events: none; }
 .q { border: 0; margin: 0; padding: 0; min-width: 0; }
 .q-title { font-family: var(--display); font-weight: 500; font-size: clamp(2rem, 5.2vw, 3.4rem); line-height: 1.08; letter-spacing: -0.015em; padding: 0; margin-bottom: 28px; text-wrap: balance; }
 .choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -73,7 +74,6 @@
 
 @media (max-width: 640px) {
   .choices { grid-template-columns: minmax(0, 1fr); }
-  .q-stage { min-height: 300px; }
   .ucard { padding: 22px 18px 18px; border-radius: 22px; }
   .u-steps li { grid-template-columns: 42px minmax(0, 1fr); }
   .u-steps li::before { font-size: 1.35rem; }

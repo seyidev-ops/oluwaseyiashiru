@@ -4,7 +4,7 @@
 
   /* ---------------- The run-through ---------------- */
   var QUESTIONS = [
-    { id: 'type', kind: 'choice', q: 'What are you holding right now?', opts: [
+    { id: 'type', kind: 'choice', q: 'What do you want to put to use?', opts: [
       ['idea', 'An idea', 'Something I want to start or build'],
       ['learned', 'Something I learned', 'A seminar, sermon, video or AI answer'],
       ['skill', 'A skill I have', 'Something I can already do well'],
@@ -89,18 +89,26 @@
       setTimeout(function () { input.focus({ preventScroll: true }); }, reduce ? 0 : 420);
     }
 
-    var old = stage.firstChild;
+    /* One card at a time: the answered card folds away, the next one opens in its place */
+    var olds = Array.prototype.slice.call(stage.querySelectorAll('.q'));
+    var fromH = stage.offsetHeight;
+    olds.forEach(function (o) { o.classList.add('leaving'); o.style.position = 'absolute'; o.style.left = '0'; o.style.right = '0'; o.style.top = '0'; });
     stage.appendChild(box);
-    if (old) {
-      if (reduce || !old.animate) { stage.removeChild(old); }
-      else {
-        var off = dir < 0 ? 60 : -60;
-        old.style.position = 'absolute'; old.style.inset = '0 0 auto 0';
-        old.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(' + off + 'px)' }], { duration: 320, easing: 'ease-in', fill: 'forwards' })
-          .onfinish = function () { if (old.parentNode) old.parentNode.removeChild(old); };
-        box.animate([{ opacity: 0, transform: 'translateX(' + (-off) + 'px)' }, { opacity: 1, transform: 'none' }], { duration: 480, delay: 120, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'backwards' });
-      }
+    if (reduce || !box.animate) {
+      olds.forEach(function (o) { o.remove(); });
+    } else {
+      var off = dir < 0 ? 1 : -1;
+      olds.forEach(function (o) {
+        o.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(' + (off * 24) + 'px) scale(.96)' }],
+          { duration: 260, easing: 'ease-in', fill: 'forwards' }).onfinish = function () { o.remove(); };
+      });
+      box.animate([{ opacity: 0, transform: 'translateY(' + (-off * 28) + 'px) scale(.98)' }, { opacity: 1, transform: 'none' }],
+        { duration: 460, delay: 200, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'backwards' });
+      var toH = box.offsetHeight;
+      if (fromH && toH) stage.animate([{ height: fromH + 'px' }, { height: toH + 'px' }], { duration: 420, easing: 'cubic-bezier(.2,.7,.2,1)' });
     }
+    var wizTop = document.getElementById('wizard').getBoundingClientRect().top;
+    if (dir !== 0 && wizTop < 0) window.scrollTo({ top: window.scrollY + wizTop - 90, behavior: reduce ? 'auto' : 'smooth' });
     back.hidden = step === 0;
     next.textContent = step === QUESTIONS.length - 1 ? 'Make it usable' : 'Next';
     next.hidden = Q.kind === 'choice' && step < QUESTIONS.length - 1 && !answers[Q.id];
