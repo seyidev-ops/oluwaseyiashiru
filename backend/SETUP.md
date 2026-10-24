@@ -12,7 +12,7 @@ to you, and logs the entry in a Google Sheet.
 ## 2. Create the script
 1. Go to <https://script.google.com> and click **New project**. Name it **USE Pack engine**.
 2. Delete the sample code in `Code.gs`, then paste in everything from `backend/Code.gs`. Click **Save**.
-   Then, so the script only asks for the access it needs: **Project Settings** (gear icon) › tick **Show "appsscript.json" manifest file in editor**. Back in the Editor, open `appsscript.json`, replace everything in it with `backend/appsscript.json`, and click **Save**. (Without this, Google asks for access to your whole Drive and may block the script.)
+   Then, so the script only asks for the access it needs: **Project Settings** (gear icon) › tick **Show "appsscript.json" manifest file in editor**. Back in the Editor, open `appsscript.json`, replace everything in it with `backend/appsscript.json`, and click **Save**. (This keeps the permissions to Drive, the sheet, sending mail and web requests. Use an account without Advanced Protection: it blocks scripts like this one.)
 3. In the function menu at the top choose **setup**, then click **Run**. Approve the permissions
    (Drive, Sheets, Gmail, external requests). This creates a **Making Knowledge Usable** folder in your
    Drive with **Uploads**, **USE Packs** and the **Entries** sheet.
