@@ -293,12 +293,13 @@
         /* never cover the portrait: a label fades out as it nears the icon, and back in as it leaves */
         var vis = 1;
         if (clearR) {
-          var qx = f.x + f.w / 2 - center.x, qy = f.y + f.h / 2 - center.y;
-          var gap = Math.sqrt(qx * qx + qy * qy) - clearR - f.w * 0.45;
-          vis = Math.max(0, Math.min(1, gap / 36));
+          /* labels may cross the portrait, but only as a faint ghost: fade by how far the label reaches into it */
+          var nx = Math.max(f.x, Math.min(center.x, f.x + f.w)), ny = Math.max(f.y, Math.min(center.y, f.y + f.h));
+          var reach = clearR - Math.sqrt((nx - center.x) * (nx - center.x) + (ny - center.y) * (ny - center.y));
+          vis = reach <= 0 ? 1 : Math.max(0.18, 1 - reach / 40);
         }
         f.el.style.opacity = (0.92 * vis * f.alpha).toFixed(3);
-        f.el.style.pointerEvents = vis < 0.2 ? 'none' : '';
+        f.el.style.pointerEvents = vis < 0.5 ? 'none' : '';
         f.el.style.zIndex = 2;
       }
     });

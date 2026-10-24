@@ -14,8 +14,8 @@
     mode: 'orbit', seed: 5,
     count: function (W) { return W < 700 ? 34 : 58; },
     center: coreCenter,
-    inner: function () { return core.offsetWidth * 0.74; },
-    clear: function () { return core.offsetWidth * 0.56; },
+    inner: function () { return core.offsetWidth * 0.46; },
+    clear: function () { return core.offsetWidth * 0.44; },
     speedMul: function () { return hovering ? 0.3 : 1; }
   });
 
@@ -41,6 +41,18 @@
   });
   window.addEventListener('pageshow', function (e) { if (e.persisted) window.location.reload(); });
 
-  var go = function () { field.layout(); field.start(); };
+  /* The circling words: the instruction twice, and About standing alone in the middle of the gap */
+  var ringPath = document.getElementById('ring-path'), instr = document.getElementById('ring-instr'), about = document.getElementById('ring-about');
+  function fitRing() {
+    if (!ringPath || !instr || !instr.getComputedTextLength) return;
+    var L = ringPath.getTotalLength(), size = parseFloat(getComputedStyle(instr).fontSize) || 12;
+    instr.style.fontSize = ''; size = parseFloat(getComputedStyle(instr).fontSize) || 12;
+    for (var i = 0; i < 12 && instr.getComputedTextLength() > L * 0.8; i++) { size *= 0.94; instr.style.fontSize = size + 'px'; }
+    var used = instr.getComputedTextLength(), gap = L - used;
+    about.setAttribute('startOffset', (used + gap / 2).toFixed(1));
+  }
+
+  var go = function () { fitRing(); field.layout(); field.start(); };
+  window.addEventListener('resize', fitRing);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
 })();
