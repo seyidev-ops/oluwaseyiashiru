@@ -11,8 +11,8 @@
   --halo: rgba(247, 245, 240, 0);
   --night: #14213D;
   --on-night: #F7F5F0;
-  --thread: rgba(212, 162, 76, .42);
-  --thread-ink: rgba(20, 33, 61, .10);
+  --thread: rgba(212, 162, 76, .24);
+  --thread-ink: rgba(20, 33, 61, .055);
   --display: "Fraunces", Georgia, "Times New Roman", serif;
   --body: "Montserrat", Arial, Helvetica, sans-serif;
   --ease: cubic-bezier(.2, .7, .2, 1);
@@ -22,13 +22,13 @@
   :root:not([data-theme="light"]) {
     --bg: #0F203F; --surface: #172A4D; --ink: #F7F5F0; --muted: #B4BBCB; --gold: #D4A24C; --gold-ink: #E2B866;
     --rule: rgba(247, 245, 240, .14); --frag-bg: rgba(20, 33, 61, .78); --halo: transparent;
-    --night: #F7F5F0; --on-night: #14213D; --thread: rgba(212, 162, 76, .38); --thread-ink: rgba(247, 245, 240, .09); color-scheme: dark;
+    --night: #F7F5F0; --on-night: #14213D; --thread: rgba(212, 162, 76, .22); --thread-ink: rgba(247, 245, 240, .05); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0F203F; --surface: #172A4D; --ink: #F7F5F0; --muted: #B4BBCB; --gold: #D4A24C; --gold-ink: #E2B866;
   --rule: rgba(247, 245, 240, .14); --frag-bg: rgba(20, 33, 61, .78); --halo: transparent;
-  --night: #F7F5F0; --on-night: #14213D; --thread: rgba(212, 162, 76, .38); --thread-ink: rgba(247, 245, 240, .09); color-scheme: dark;
+  --night: #F7F5F0; --on-night: #14213D; --thread: rgba(212, 162, 76, .22); --thread-ink: rgba(247, 245, 240, .05); color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }

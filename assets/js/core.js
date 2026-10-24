@@ -99,11 +99,11 @@
       lines.forEach(function (L) {
         ctx.beginPath();
         for (var x = -20; x <= W + 20; x += 14) { var y = yAt(L, x, t); if (x === -20) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
-        ctx.strokeStyle = L.gold ? colors.line : colors.ink; ctx.lineWidth = L.gold ? 1.4 : 1; ctx.stroke();
+        ctx.strokeStyle = L.gold ? colors.line : colors.ink; ctx.lineWidth = L.gold ? 0.9 : 0.7; ctx.stroke();
         L.dots.forEach(function (d) {
           if (!reduce) { d.p += d.v * 0.016; if (d.p > 1.05) d.p = -0.05; }
           var x = d.p * W, y = yAt(L, x, t);
-          ctx.beginPath(); ctx.arc(x, y, L.gold ? 3.2 : 2.2, 0, Math.PI * 2); ctx.fillStyle = colors.dot; ctx.globalAlpha = L.gold ? 0.9 : 0.5; ctx.fill(); ctx.globalAlpha = 1;
+          ctx.beginPath(); ctx.arc(x, y, L.gold ? 2.4 : 1.6, 0, Math.PI * 2); ctx.fillStyle = colors.dot; ctx.globalAlpha = L.gold ? 0.55 : 0.3; ctx.fill(); ctx.globalAlpha = 1;
         });
       });
       if (!reduce && !document.hidden) raf = requestAnimationFrame(draw); else raf = 0;
