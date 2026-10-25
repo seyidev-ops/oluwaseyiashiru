@@ -346,8 +346,58 @@
     field: function (el, o) { var f = new Field(el, o); this.fields.push(f); return f; }
   };
 
+  /* ---------------- Floating tools: clear cache (bottom left), day / night / auto (bottom right) ---------------- */
+  var FRESH_SVG =
+    '<span class="toggle-label" aria-hidden="true">Clear cache · load the latest</span>' +
+    '<svg viewBox="0 0 44 44" aria-hidden="true">' +
+      '<circle class="ring" cx="22" cy="22" r="19" stroke-dasharray="2 4"/>' +
+      '<path class="sweep" d="M29.5 16.5A9.5 9.5 0 1 0 31 25"/>' +
+      '<path class="tip" d="M25.6 15.4l4.3 1.2-1.1 4.3"/>' +
+      '<path class="spark" d="M33 8.5v4M31 10.5h4"/>' +
+      '<circle class="dot" cx="22" cy="22" r="2.4"/>' +
+    '</svg>';
+  function freshStart(btn) {
+    btn.classList.add('working');
+    var keep = store('oa-theme');
+    try { localStorage.clear(); if (keep) localStorage.setItem('oa-theme', keep); } catch (e) {}
+    try { sessionStorage.clear(); } catch (e) {}
+    var jobs = [];
+    if (window.caches && caches.keys) jobs.push(caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }));
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) jobs.push(navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); }));
+    Promise.all(jobs).catch(function () {}).then(function () {
+      setTimeout(function () {
+        var u = new URL(window.location.href); u.searchParams.set('fresh', Date.now().toString(36)); u.hash = '';
+        window.location.replace(u.toString());
+      }, reduce ? 0 : 650);
+    });
+  }
+  function mountFloatTools() {
+    var bar = document.createElement('div'); bar.className = 'float-tools';
+    var fresh = document.createElement('button'); fresh.type = 'button'; fresh.className = 'fresh-btn';
+    fresh.setAttribute('aria-label', 'Clear cache and load the latest version of this page');
+    fresh.innerHTML = FRESH_SVG;
+    fresh.addEventListener('click', function () { freshStart(fresh); });
+    var tog = document.createElement('button'); tog.setAttribute('data-orbit-toggle', '');
+    bar.appendChild(fresh); bar.appendChild(tog); document.body.appendChild(bar);
+    var foot = document.querySelector('.foot, .home-foot'), queued = false;
+    function place() {
+      queued = false;
+      var gap = window.innerWidth < 640 ? 12 : 18, lift = 0;
+      if (foot) { var t = foot.getBoundingClientRect().top; lift = Math.max(0, window.innerHeight - t); }
+      bar.style.bottom = (lift + gap) + 'px';
+    }
+    function queue() { if (!queued) { queued = true; requestAnimationFrame(place); } }
+    window.addEventListener('scroll', queue, { passive: true }); window.addEventListener('resize', queue);
+    place(); setTimeout(place, 400);
+    if (window.location.search.indexOf('fresh=') > -1) {
+      try { history.replaceState(null, '', window.location.pathname + window.location.hash); } catch (e) {}
+      var toast = document.createElement('p'); toast.className = 'fresh-toast'; toast.setAttribute('role', 'status'); toast.textContent = 'Cleared. You’re on the latest version.';
+      document.body.appendChild(toast); setTimeout(function () { toast.classList.add('out'); }, 2600); setTimeout(function () { toast.remove(); }, 3200);
+    }
+  }
+
   function ready() {
-    mountToggles(); mountMenu(); mountSocial();
+    mountFloatTools(); mountToggles(); mountMenu(); mountSocial();
     var th = document.querySelector('canvas.threads'); if (th && th.getContext) Threads(th);
     var y = document.getElementById('year'); if (y) y.textContent = new Date().getFullYear();
   }

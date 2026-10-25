@@ -455,11 +455,25 @@
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { msg.textContent = 'Plan copied.'; }, fallback);
     else fallback();
   });
-  document.getElementById('restart').addEventListener('click', function () {
-    answers = {}; fileObj = null; step = 0; result.hidden = true; wizard.hidden = false; engine.hidden = true;
+  /* Another entry: clear the last one (keep name and contact so they don't retype), back to question one */
+  function newEntry() {
+    var keep = { name: answers.name, email: answers.email, whatsapp: answers.whatsapp, consent: answers.consent };
+    answers = {}; for (var k in keep) if (keep[k]) answers[k] = keep[k];
+    fileObj = null; step = 0; current = null;
+    result.hidden = true; wizard.hidden = false; engine.hidden = true; fullpack.innerHTML = '';
+    document.getElementById('pdf-dl').hidden = true; card.hidden = false; document.getElementById('after').hidden = false;
+    document.getElementById('copy-msg').textContent = '';
     document.getElementById('intro').hidden = true; document.querySelector('.wiz-head').hidden = false; form.hidden = false;
-    document.getElementById('resume').hidden = true;
+    document.getElementById('resume').hidden = true; hideErr();
+    try { localStorage.removeItem('oa-plan'); } catch (e) {}
     stage.innerHTML = ''; render(1);
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  document.getElementById('restart').addEventListener('click', newEntry);
+  document.getElementById('new-entry').addEventListener('click', newEntry);
+  document.getElementById('fresh-entry').addEventListener('click', function () {
+    try { localStorage.removeItem('oa-plan'); } catch (e) {}
+    document.getElementById('resume').hidden = true;
   });
 
   /* Resume a saved plan */

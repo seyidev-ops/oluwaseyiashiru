@@ -3,20 +3,27 @@ html, body.home { height: 100%; }
 body.home { overflow: hidden; display: flex; flex-direction: column; touch-action: none; overscroll-behavior: none; }
 
 .home-top {
-  position: relative; z-index: 10; flex: none; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 20px;
-  padding: calc(14px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) 14px max(20px, env(safe-area-inset-left, 0px));
-  border-bottom: 1px solid var(--rule); background: var(--bg);
+  position: relative; z-index: 10; flex: none; display: flex; justify-content: center; align-items: center;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 20px 12px; background: var(--bg);
 }
-.wordmark { display: block; }
-.wordmark img { width: clamp(130px, 15vw, 200px); height: auto; }
-.wm-night { display: none; }
-html.is-dark .wm-day { display: none; }
-html.is-dark .wm-night { display: block; }
+/* the text logo writes itself in on every visit, then stays still */
+.wordmark { display: block; position: relative; }
+.wordmark img { width: clamp(150px, 17vw, 220px); height: auto; display: block;
+  -webkit-mask-image: linear-gradient(90deg, #000 45%, transparent 55%); mask-image: linear-gradient(90deg, #000 45%, transparent 55%);
+  -webkit-mask-size: 240% 100%; mask-size: 240% 100%; -webkit-mask-position: 100% 0; mask-position: 100% 0;
+  animation: write-in 2.1s cubic-bezier(.55, .1, .35, 1) .25s forwards; }
+.wm-night { display: none !important; }
+html.is-dark .wm-day { display: none !important; }
+html.is-dark .wm-night { display: block !important; }
+.wm-pen { position: absolute; top: 46%; left: 0; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; background: var(--gold);
+  box-shadow: 0 0 12px 3px color-mix(in srgb, var(--gold) 60%, transparent); opacity: 0; animation: pen-run 2.1s cubic-bezier(.55, .1, .35, 1) .25s forwards; }
+@keyframes write-in { to { -webkit-mask-position: 0 0; mask-position: 0 0; } }
+@keyframes pen-run { 0% { left: 0; opacity: 0; } 8% { opacity: 1; } 35% { top: 30%; } 60% { top: 58%; } 90% { opacity: 1; } 100% { left: 100%; top: 44%; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .wordmark img { animation: none; -webkit-mask-image: none; mask-image: none; } .wm-pen { display: none; } }
 .home-line {
-  margin: 0; text-align: center; font-family: var(--display); font-weight: 500; letter-spacing: -0.01em;
-  font-size: clamp(1rem, 2.2vw, 1.75rem); line-height: 1.2; color: var(--ink);
+  position: relative; z-index: 10; flex: none; margin: 0; padding: 10px 20px 12px; text-align: center; background: var(--bg); border-bottom: 1px solid var(--rule);
+  font-family: var(--display); font-weight: 500; letter-spacing: -0.01em; font-size: clamp(1.05rem, 2.2vw, 1.6rem); line-height: 1.25; color: var(--ink);
 }
-.corner-toggle { justify-self: end; }
 
 .zone { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
 .field { position: absolute; inset: 0; }
@@ -67,9 +74,8 @@ html.is-dark .core-shadow { background: radial-gradient(closest-side, #000, rgba
 .home-foot .social-link { padding: 0; }
 
 @media (max-width: 640px) {
-  .home-top { gap: 10px; padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(10px, env(safe-area-inset-right, 0px)); }
-  .wordmark img { width: 112px; }
-  .home-line { font-size: .86rem; }
+  .wordmark img { width: 140px; }
+  .home-line { font-size: 1rem; padding: 8px 16px 10px; }
   body.home .frag { font-size: .7rem; }
   .core { width: 50vw; }
   .call-ring { width: calc(50vw * 1.16); }

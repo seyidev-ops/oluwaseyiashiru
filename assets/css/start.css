@@ -126,3 +126,9 @@
 .intro-sub { font-size: 1.15rem; color: var(--muted); max-width: 46ch; margin: 22px 0 30px; }
 .intro-go { min-height: 60px; padding: 0 34px; font-size: 1.05rem; }
 #wiz-form { transform-origin: top center; }
+
+/* Another entry */
+.result-top { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+.new-entry { font: 600 .9rem var(--body); color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 10px 16px; cursor: pointer; }
+.new-entry:hover { border-color: var(--gold); color: var(--gold-ink); }
+.resume-actions { display: flex; gap: 8px; flex-wrap: wrap; }

@@ -13,8 +13,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=20261025b">
-<link rel="stylesheet" href="assets/css/start.css?v=20261025b">
+<link rel="stylesheet" href="assets/css/site.css?v=20261025c">
+<link rel="stylesheet" href="assets/css/start.css?v=20261025c">
 </head>
 <body class="inner">
 <canvas class="threads" aria-hidden="true"></canvas>
@@ -29,7 +29,6 @@
       <a href="commit.html">Next level</a>
       <a href="about.html">About</a>
     </nav>
-    <button data-orbit-toggle></button>
     </div>
   </div>
 </header>
@@ -51,8 +50,8 @@
       </div>
 
       <div class="resume" id="resume" hidden>
-        <p>You already have a first step waiting.</p>
-        <button class="btn btn-line" id="resume-btn" type="button">See my plan</button>
+        <p>Your last entry is saved on this device.</p>
+        <div class="resume-actions"><button class="btn btn-line" id="resume-btn" type="button">See it</button><button class="btn btn-ghost" id="fresh-entry" type="button">Start a new one</button></div>
       </div>
 
       <form id="wiz-form" novalidate hidden>
@@ -66,6 +65,7 @@
     </section>
 
     <section class="result" id="result" hidden aria-labelledby="card-title">
+      <div class="result-top"><button class="new-entry" type="button" id="new-entry">＋ New entry</button></div>
       <div class="forming" id="forming" aria-hidden="true"></div>
       <article class="ucard" id="ucard" tabindex="-1">
         <p class="u-source" id="u-source"></p>
@@ -91,7 +91,7 @@
         <div class="after-actions">
           <a class="btn btn-gold" href="commit.html" id="to-commit">Take it to the next level</a>
           <button class="btn btn-line" type="button" id="copy">Copy my plan</button>
-          <button class="btn btn-ghost" type="button" id="restart">Start again</button>
+          <button class="btn btn-line" type="button" id="restart">Make another entry</button>
         </div>
         <p class="copy-msg" id="copy-msg" role="status"></p>
         <p class="saved-note">Your plan stays saved on this device, so you can come back to it.</p>
@@ -109,8 +109,8 @@
   </div>
 </footer>
 
-<script src="assets/js/config.js?v=20261025b"></script>
-<script src="assets/js/core.js?v=20261025b"></script>
-<script src="assets/js/start.js?v=20261025b"></script>
+<script src="assets/js/config.js?v=20261025c"></script>
+<script src="assets/js/core.js?v=20261025c"></script>
+<script src="assets/js/start.js?v=20261025c"></script>
 </body>
 </html>
