@@ -20,10 +20,34 @@ html.is-dark .wm-night { display: block !important; }
 @keyframes write-in { to { -webkit-mask-position: 0 0; mask-position: 0 0; } }
 @keyframes pen-run { 0% { left: 0; opacity: 0; } 8% { opacity: 1; } 35% { top: 30%; } 60% { top: 58%; } 90% { opacity: 1; } 100% { left: 100%; top: 44%; opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .wordmark img { animation: none; -webkit-mask-image: none; mask-image: none; } .wm-pen { display: none; } }
-.home-line {
-  position: relative; z-index: 10; flex: none; margin: 0; padding: 10px 20px 12px; text-align: center; background: var(--bg); border-bottom: 1px solid var(--rule);
-  font-family: var(--display); font-weight: 500; letter-spacing: -0.01em; font-size: clamp(1.05rem, 2.2vw, 1.6rem); line-height: 1.25; color: var(--ink);
-}
+/* the quote: one still line, cut out between two scissor lines that snip across on every visit */
+.quote-band { position: relative; z-index: 10; flex: none; background: var(--bg); padding: 0 16px; }
+.home-quote { margin: 0; padding: 9px 0 10px; text-align: center; }
+.home-quote blockquote { margin: 0; }
+.home-quote p { margin: 0; white-space: nowrap; font-family: var(--display); font-style: italic; font-weight: 400; font-size: 15px; line-height: 1.35; color: var(--ink); }
+.home-quote cite { font-family: var(--body); font-style: normal; font-weight: 600; font-size: .78em; letter-spacing: .04em; color: var(--gold-ink); white-space: nowrap; }
+.home-quote.wrap p { white-space: normal; }
+.home-quote.wrap .q-a, .home-quote.wrap .q-b { display: block; }
+.home-quote.wrap cite { display: block; margin-top: 2px; }
+.cut { position: relative; height: 14px; }
+.cut-line { position: absolute; left: 0; right: 0; top: 50%; height: 0; border-top: 1.5px dashed color-mix(in srgb, var(--ink) 45%, transparent); clip-path: inset(0 100% 0 0); animation: cut-draw 2.2s cubic-bezier(.45, .05, .4, 1) .5s forwards; }
+.cut-bottom .cut-line { clip-path: inset(0 0 0 100%); animation-name: cut-draw-back; animation-delay: .8s; }
+@keyframes cut-draw { to { clip-path: inset(0 0 0 0); } }
+@keyframes cut-draw-back { to { clip-path: inset(0 0 0 0); } }
+.scissors { position: absolute; top: 50%; left: 0; width: 34px; height: 17px; margin: -8.5px 0 0 -17px; overflow: visible; color: var(--gold); opacity: 0;
+  animation: cut-run 2.2s cubic-bezier(.45, .05, .4, 1) .5s forwards; }
+.cut-bottom .scissors { left: 100%; transform: scaleX(-1); animation-name: cut-run-back; animation-delay: .8s; }
+.scissors circle:not(.pin) { fill: none; stroke: currentColor; stroke-width: 2; }
+.scissors .arm { stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.scissors .edge { fill: var(--ink); }
+.scissors .pin { fill: var(--bg); }
+.scissors .blade { transform-box: view-box; transform-origin: 21px 12px; animation: snip .28s ease-in-out .5s 8 alternate; }
+.scissors .b1 { --open: -16deg; } .scissors .b2 { --open: 16deg; }
+@keyframes snip { from { transform: rotate(var(--open)); } to { transform: rotate(0deg); } }
+@keyframes cut-run { 0% { left: 0; opacity: 0; } 6% { opacity: 1; } 88% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
+@keyframes cut-run-back { 0% { left: 100%; opacity: 0; } 6% { opacity: 1; } 88% { opacity: 1; } 100% { left: 0; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cut-line { animation: none; clip-path: none; } .scissors { display: none; } }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .zone { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
 .field { position: absolute; inset: 0; }
@@ -75,7 +99,6 @@ html.is-dark .core-shadow { background: radial-gradient(closest-side, #000, rgba
 
 @media (max-width: 640px) {
   .wordmark img { width: 140px; }
-  .home-line { font-size: 1rem; padding: 8px 16px 10px; }
   body.home .frag { font-size: .7rem; }
   .core { width: 50vw; }
   .call-ring { width: calc(50vw * 1.16); }

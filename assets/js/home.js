@@ -63,6 +63,18 @@
     about.setAttribute('startOffset', ((used + L) / 2).toFixed(1));
   }
 
+  /* the quote stays on one line: shrink to fit; on very narrow screens let it break at the sentence */
+  var hq = document.getElementById('hq'), fig = hq && hq.closest('.home-quote');
+  function fitQuote() {
+    if (!hq) return;
+    fig.classList.remove('wrap'); var size = 16; hq.style.fontSize = size + 'px';
+    var room = fig.clientWidth;
+    while (hq.scrollWidth > room && size > 11) { size -= 0.5; hq.style.fontSize = size + 'px'; }
+    if (hq.scrollWidth > room) { fig.classList.add('wrap'); hq.style.fontSize = '12px'; }
+  }
+  fitQuote(); window.addEventListener('resize', fitQuote);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitQuote);
+
   var go = function () { fitRing(); field.layout(); field.start(); };
   window.addEventListener('resize', fitRing);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
