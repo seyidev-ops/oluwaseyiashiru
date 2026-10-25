@@ -74,9 +74,9 @@ html.is-auto .orbit-toggle .moonlet { transform: rotate(90deg); }
   position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; white-space: nowrap;
   font-size: .76rem; font-weight: 500; color: var(--ink); background: var(--surface); padding: 6px 10px; border-radius: 10px;
   box-shadow: 0 0 0 1px var(--rule), 0 10px 24px -14px rgba(20, 33, 61, .5);
-  opacity: 0; transform: translateY(-4px); transition: opacity .25s, transform .25s; pointer-events: none;
+  opacity: 0; transform: translateY(-4px); transition: opacity .2s, transform .2s; pointer-events: none;
 }
-.orbit-toggle:hover .toggle-label, .orbit-toggle:focus-visible .toggle-label { opacity: 1; transform: none; }
+.orbit-toggle.tip .toggle-label, .fresh-btn.tip .toggle-label { opacity: 1; transform: none; }
 
 /* ---------- Floating tools: clear cache (left) and day / night / auto (right), always just above the footer ---------- */
 .float-tools { position: fixed; left: 0; right: 0; bottom: 18px; z-index: 30; display: flex; justify-content: space-between; align-items: center;
@@ -88,7 +88,6 @@ html.is-auto .orbit-toggle .moonlet { transform: rotate(90deg); }
 .float-tools .orbit-toggle .toggle-label { right: 0; }
 .fresh-btn { padding: 0; border: 0; cursor: pointer; color: var(--gold); display: grid; place-items: center; position: relative; }
 .fresh-btn .toggle-label { left: 0; right: auto; }
-.fresh-btn:hover .toggle-label, .fresh-btn:focus-visible .toggle-label { opacity: 1; transform: none; }
 .fresh-btn svg { width: 44px; height: 44px; overflow: visible; }
 .fresh-btn .ring { fill: none; stroke: currentColor; stroke-width: 1.4; opacity: .8; transform-origin: 22px 22px; }
 .fresh-btn .sweep, .fresh-btn .tip { fill: none; stroke: var(--gold); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transform-origin: 22px 22px; transition: transform .6s var(--ease); }

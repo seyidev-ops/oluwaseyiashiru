@@ -38,15 +38,25 @@
       '<circle class="moonlet" cx="41" cy="22" r="2.4"/>' +
     '</svg>';
 
+  /* labels on the round buttons appear briefly, then leave on their own */
+  function tip(btn, ms) {
+    clearTimeout(btn._tipT); btn.classList.add('tip');
+    btn._tipT = setTimeout(function () { btn.classList.remove('tip'); }, ms || 1100);
+  }
+  function wireTip(btn) {
+    btn.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') tip(btn, 1100); });
+    btn.addEventListener('keyup', function (e) { if (e.key === 'Tab') tip(btn, 1400); });
+  }
+
   function mountToggles() {
     document.querySelectorAll('[data-orbit-toggle]').forEach(function (b) {
       b.classList.add('orbit-toggle');
       b.type = 'button';
-      b.innerHTML = TOGGLE_SVG;
+      b.innerHTML = TOGGLE_SVG; wireTip(b);
       b.addEventListener('click', function () {
         mode = MODES[(MODES.indexOf(mode) + 1) % 3];
         store('oa-theme', mode); applyTheme();
-        b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash');
+        b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash'); tip(b, 900);
       });
     });
     applyTheme();
@@ -383,7 +393,8 @@
     var fresh = document.createElement('button'); fresh.type = 'button'; fresh.className = 'fresh-btn';
     fresh.setAttribute('aria-label', 'Clear cache and load the latest version of this page');
     fresh.innerHTML = FRESH_SVG;
-    fresh.addEventListener('click', function () { freshStart(fresh); });
+    fresh.addEventListener('click', function () { clearTimeout(fresh._tipT); fresh.classList.remove('tip'); freshStart(fresh); });
+    wireTip(fresh);
     var tog = document.createElement('button'); tog.setAttribute('data-orbit-toggle', '');
     bar.appendChild(fresh); bar.appendChild(tog); document.body.appendChild(bar);
     var foot = document.querySelector('.foot, .home-foot'), queued = false;
@@ -396,11 +407,7 @@
     function queue() { if (!queued) { queued = true; requestAnimationFrame(place); } }
     window.addEventListener('scroll', queue, { passive: true }); window.addEventListener('resize', queue);
     place(); setTimeout(place, 400);
-    if (window.location.search.indexOf('fresh=') > -1) {
-      try { history.replaceState(null, '', window.location.pathname + window.location.hash); } catch (e) {}
-      var toast = document.createElement('p'); toast.className = 'fresh-toast'; toast.setAttribute('role', 'status'); toast.textContent = 'Cleared. You’re on the latest version.';
-      document.body.appendChild(toast); setTimeout(function () { toast.classList.add('out'); }, 2600); setTimeout(function () { toast.remove(); }, 3200);
-    }
+    if (window.location.search.indexOf('fresh=') > -1) { try { history.replaceState(null, '', window.location.pathname + window.location.hash); } catch (e) {} }
   }
 
   function ready() {
