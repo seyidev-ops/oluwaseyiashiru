@@ -2,35 +2,44 @@
   'use strict';
   var OA = window.OA, reduce = OA.reduce;
 
-  /* ---------------- The run-through ---------------- */
-  var QUESTIONS = [
-    { id: 'type', kind: 'choice', q: 'What do you want to put to use?', opts: [
-      ['idea', 'An idea', 'Something I want to start or build'],
-      ['learned', 'Something I learned', 'A seminar, sermon, video or AI answer'],
-      ['skill', 'A skill I have', 'Something I can already do well'],
-      ['goal', 'A goal I keep postponing', 'Something I keep meaning to do']] },
-    { id: 'field', kind: 'choice', compact: true, q: 'Which part of life is it about?', opts: [
-      ['career', 'Work and career'], ['business', 'Business'], ['money', 'Personal money'], ['tech', 'AI and tech'],
-      ['faith', 'Faith'], ['learning', 'School and learning'], ['family', 'Family and relationships'], ['health', 'Health and wellbeing'],
-      ['creative', 'Creative work'], ['trades', 'Skills and trades'], ['community', 'Leadership and community'], ['other', 'Something else']] },
-    { id: 'what', kind: 'text', q: {
-      idea: 'Describe your idea in one sentence.', learned: 'What did you learn, and where?',
-      skill: 'What can you do?', goal: 'What is the goal?' },
-      ph: { idea: 'A food delivery service for offices near me', learned: 'A webinar on getting remote jobs',
-        skill: 'I design flyers in Canva', goal: 'Read one book every month' } },
-    { id: 'want', kind: 'line', q: 'What do you want it to do for you?',
-      ph: { idea: 'Get my first paying customer', learned: 'Land my first remote interview', skill: 'Earn from it this month', goal: 'Finish the first book' } },
-    { id: 'block', kind: 'choice', q: 'What usually stops you?', opts: [
-      ['start', 'I don’t know where to start'], ['time', 'I don’t have time'], ['money', 'I don’t have money'],
-      ['fear', 'I’m afraid it won’t work'], ['stopped', 'I started before and stopped']] },
-    { id: 'time', kind: 'choice', compact: true, q: 'How much time can you give today?', opts: [
-      ['15', '15 minutes'], ['30', '30 minutes'], ['60', 'An hour']] }
-  ];
+  /* ---------------- The run-through: one thing at a time ---------------- */
   var ENDPOINT = (window.OA_ENDPOINT || '').trim();
   var fileObj = null, MAX_MB = 25;
-  if (ENDPOINT) {
-    QUESTIONS.splice(3, 0, { id: 'source', kind: 'source', q: 'Share it with us, if you have it.' });
-    QUESTIONS.push({ id: 'contact', kind: 'contact', q: 'Where should we send your full USE Pack?' });
+  var WHERE = [
+    ['social', 'Social media', 'Facebook, TikTok, Instagram, WhatsApp', 'other'],
+    ['youtube', 'YouTube or a video online', 'A video, course or livestream', 'other'],
+    ['church', 'Church or ministry', 'A sermon, teaching or Bible study', 'faith'],
+    ['seminar', 'A seminar, workshop or training', 'In person or online', 'career'],
+    ['school', 'School or a class', 'A lecture, lesson or course', 'learning'],
+    ['ai', 'An AI answer', 'ChatGPT, Gemini, Claude and others', 'tech'],
+    ['book', 'A book, article or podcast', 'Something you read or listened to', 'other'],
+    ['other', 'Somewhere else', 'A conversation, a mentor, anywhere', 'other']
+  ];
+  function whereOf(k) { for (var i = 0; i < WHERE.length; i++) if (WHERE[i][0] === k) return WHERE[i]; return WHERE[WHERE.length - 1]; }
+  function lower(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
+  var QUESTIONS = [
+    { id: 'where', kind: 'select', q: 'Where did you last pick up something you’d like to put to use?', opts: WHERE },
+    { id: 'have', kind: 'choice', when: function () { return !!ENDPOINT; },
+      q: function (a) { return a.where === 'ai' ? 'Do you have the answer with you?' : 'Do you have it with you?'; },
+      opts: [['link', 'I have the link', 'YouTube, Facebook, a website…'], ['file', 'I have the video or audio', 'On my phone or computer'], ['none', 'I don’t, but I can tell you about it', 'A few words is enough']] },
+    { id: 'link', kind: 'link', when: function (a) { return a.have === 'link'; }, q: 'Paste the link here.' },
+    { id: 'upload', kind: 'upload', when: function (a) { return a.have === 'file'; }, q: 'Add the video or audio.' },
+    { id: 'what', kind: 'text', when: function (a) { return !ENDPOINT || a.have === 'none'; },
+      q: function (a) { return 'What was it about? Say it the way you’d tell a friend.'; },
+      ph: function (a) { return { church: 'The pastor taught on faithfulness in small things', ai: 'ChatGPT explained how to price my services', school: 'Our lecturer explained how to write a business plan' }[a.where] || 'A video on getting your first remote job'; } },
+    { id: 'want', kind: 'line', q: 'What do you want it to do for you?',
+      ph: function (a) { return { church: 'Be more consistent in prayer this month', ai: 'Send my first price list to clients', school: 'Pass my exam with a better grade' }[a.where] || 'Land my first remote interview'; } },
+    { id: 'time', kind: 'choice', compact: true, q: 'How much time can you give it today?', opts: [['15', '15 minutes'], ['30', '30 minutes'], ['60', 'An hour']] },
+    { id: 'contact', kind: 'contact', when: function () { return !!ENDPOINT; }, q: 'Where should we send your USE Pack?' }
+  ];
+  function flow() { return QUESTIONS.filter(function (Q) { return !Q.when || Q.when(answers); }); }
+  function txt(v) { return typeof v === 'function' ? v(answers) : v; }
+  /* fill in what the engine and the quick plan expect from the few answers we asked for */
+  function complete() {
+    var W = whereOf(answers.where);
+    answers.type = 'learned'; answers.block = answers.block || 'start'; answers.field = W[3];
+    var said = (answers.what || '').trim(), about = (answers.about || '').trim();
+    answers.what = 'Source: ' + W[1] + '. ' + (said || about || (answers.link ? 'the link shared' : fileObj ? 'the video shared' : 'what I learned'));
   }
 
   var answers = {}, step = 0;
@@ -40,26 +49,20 @@
   var next = document.getElementById('next');
   var err = document.getElementById('q-error');
   var count = document.getElementById('wiz-count');
-  var arc = document.getElementById('p-arc');
-  var dot = document.getElementById('p-dot');
-  var CIRC = 2 * Math.PI * 26;
 
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
   function progress() {
-    var k = (step + 1) / QUESTIONS.length;
-    arc.style.strokeDasharray = CIRC;
-    arc.style.strokeDashoffset = CIRC * (1 - k);
-    var a = -Math.PI / 2 + k * Math.PI * 2;
-    dot.setAttribute('cx', (30 + Math.cos(a) * 26).toFixed(2));
-    dot.setAttribute('cy', (30 + Math.sin(a) * 26).toFixed(2));
-    count.textContent = 'Question ' + (step + 1) + ' of ' + QUESTIONS.length;
+    var n = flow().length + (ENDPOINT && !answers.have ? 1 : 0), dots = document.getElementById('calm-dots');
+    if (dots.children.length !== n) { dots.innerHTML = ''; for (var i = 0; i < n; i++) dots.appendChild(el('li')); }
+    Array.prototype.forEach.call(dots.children, function (d, i) { d.className = i < step ? 'done' : i === step ? 'now' : ''; });
+    count.textContent = (step + 1) + ' of ' + n;
   }
 
   function render(dir) {
-    var Q = QUESTIONS[step], type = answers.type || 'idea';
+    var Q = flow()[step];
     var box = el('fieldset', 'q' + (Q.compact ? ' compact' : ''));
-    var legend = el('legend', 'q-title', typeof Q.q === 'string' ? Q.q : Q.q[type]);
+    var legend = el('legend', 'q-title', txt(Q.q));
     legend.id = 'wiz-q';
     box.appendChild(legend);
 
@@ -77,22 +80,26 @@
         lab.style.setProperty('--i', i);
         inp.addEventListener('change', function () {
           answers[Q.id] = inp.value; hideErr();
-          setTimeout(function () { if (QUESTIONS[step] === Q) advance(); }, reduce ? 0 : 380);
+          setTimeout(function () { if (flow()[step] === Q) advance(); }, reduce ? 0 : 380);
         });
         list.appendChild(lab);
       });
       box.appendChild(list);
-    } else if (Q.kind === 'source') {
-      renderSource(box);
+    } else if (Q.kind === 'select') {
+      renderSelect(box, Q);
+    } else if (Q.kind === 'link') {
+      renderLink(box);
+    } else if (Q.kind === 'upload') {
+      renderUpload(box);
     } else if (Q.kind === 'contact') {
       renderContact(box);
     } else {
       var id = 'q-' + Q.id;
-      var lab2 = el('label', 'visually-hidden', typeof Q.q === 'string' ? Q.q : Q.q[type]); lab2.setAttribute('for', id);
+      var lab2 = el('label', 'visually-hidden', txt(Q.q)); lab2.setAttribute('for', id);
       var input = document.createElement(Q.kind === 'text' ? 'textarea' : 'input');
       input.id = id; input.name = Q.id; input.className = 'q-input';
       if (Q.kind === 'text') input.rows = 3;
-      input.placeholder = Q.ph[type];
+      input.placeholder = txt(Q.ph);
       input.value = answers[Q.id] || '';
       input.setAttribute('aria-describedby', 'q-error');
       input.addEventListener('input', function () { answers[Q.id] = input.value; hideErr(); });
@@ -121,9 +128,9 @@
     var wizTop = document.getElementById('wizard').getBoundingClientRect().top;
     if (dir !== 0 && wizTop < 0) window.scrollTo({ top: window.scrollY + wizTop - 90, behavior: reduce ? 'auto' : 'smooth' });
     back.hidden = step === 0;
-    next.textContent = step === QUESTIONS.length - 1 ? 'Make it usable' : 'Next';
-    next.hidden = Q.kind === 'choice' && step < QUESTIONS.length - 1 && !answers[Q.id];
-    if (Q.kind === 'choice' && step === QUESTIONS.length - 1) next.hidden = false;
+    next.textContent = step === flow().length - 1 ? 'Find my one thing' : 'Next';
+    next.hidden = Q.kind === 'choice' && step < flow().length - 1 && !answers[Q.id];
+    if (Q.kind === 'choice' && step === flow().length - 1) next.hidden = false;
     progress();
   }
 
@@ -137,24 +144,78 @@
     if (help) wrap.appendChild(el('p', 'q-help', help));
     box.appendChild(wrap); return i;
   }
-  function renderSource(box) {
-    box.appendChild(el('p', 'q-sub', 'A link or the video itself lets us read it fully. You can skip this step.'));
-    var link = field(box, 'q-link', 'Paste a link', 'url', 'https://youtube.com/watch?v=…', 'YouTube links are read in full. Facebook, Instagram and TikTok links can’t be opened automatically, so upload the video instead.');
-    link.setAttribute('inputmode', 'url');
-    var wrap = el('div', 'q-field');
-    var l = el('label', 'q-label', 'Or upload a video or audio file (up to ' + MAX_MB + ' MB)'); l.setAttribute('for', 'q-file');
-    var f = document.createElement('input'); f.type = 'file'; f.id = 'q-file'; f.className = 'q-file'; f.accept = 'video/*,audio/*';
-    var picked = el('p', 'q-help', fileObj ? 'Selected: ' + fileObj.name : '');
-    f.addEventListener('change', function () {
-      hideErr(); fileObj = f.files && f.files[0] || null;
-      if (fileObj && fileObj.size > MAX_MB * 1024 * 1024) { showErr('That file is ' + Math.round(fileObj.size / 1048576) + ' MB. The limit is ' + MAX_MB + ' MB, so share a YouTube or Google Drive link instead.'); fileObj = null; f.value = ''; }
-      picked.textContent = fileObj ? 'Selected: ' + fileObj.name + ' (' + (fileObj.size / 1048576).toFixed(1) + ' MB)' : '';
+  /* A calm dropdown: one tap opens the places, one tap chooses */
+  function renderSelect(box, Q) {
+    var wrap = el('div', 'calm-select'), chosen = answers[Q.id] ? whereOf(answers[Q.id]) : null;
+    var btn = el('button', 'cs-btn'); btn.type = 'button'; btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-labelledby', 'wiz-q');
+    var face = el('span', 'cs-face', chosen ? chosen[1] : 'Choose a place'); if (!chosen) face.classList.add('empty');
+    btn.appendChild(face); btn.insertAdjacentHTML('beforeend', '<svg class="cs-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
+    var list = el('ul', 'cs-list'); list.setAttribute('role', 'listbox'); list.tabIndex = -1;
+    Q.opts.forEach(function (o, i) {
+      var li = el('li', 'cs-opt'); li.setAttribute('role', 'option'); li.id = 'opt-' + o[0]; li.tabIndex = -1;
+      li.setAttribute('aria-selected', answers[Q.id] === o[0] ? 'true' : 'false'); li.style.setProperty('--i', i);
+      li.appendChild(el('span', 'cs-t', o[1])); li.appendChild(el('span', 'cs-d', o[2]));
+      li.addEventListener('click', function () { pick(o); });
+      li.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(o); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); (li.nextSibling || li).focus(); }
+        if (e.key === 'ArrowUp') { e.preventDefault(); (li.previousSibling || li).focus(); }
+        if (e.key === 'Escape') { toggle(false); btn.focus(); }
+      });
+      list.appendChild(li);
     });
-    wrap.appendChild(l); wrap.appendChild(f); wrap.appendChild(picked); box.appendChild(wrap);
-    box.appendChild(el('p', 'q-where', 'Where it goes: your link or file is saved in Oluwaseyi Ashiru’s Google Drive, used only to make your pack and follow up with you.'));
+    function toggle(open) {
+      wrap.classList.toggle('open', open); btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) { var sel = list.querySelector('[aria-selected="true"]') || list.firstChild; setTimeout(function () { sel.focus({ preventScroll: true }); }, 60); }
+    }
+    function pick(o) {
+      answers[Q.id] = o[0]; hideErr(); face.textContent = o[1]; face.classList.remove('empty');
+      list.querySelectorAll('.cs-opt').forEach(function (x) { x.setAttribute('aria-selected', x.id === 'opt-' + o[0] ? 'true' : 'false'); });
+      wrap.classList.add('picked'); toggle(false);
+      setTimeout(function () { if (flow()[step] === Q) advance(); }, reduce ? 0 : 520);
+    }
+    btn.addEventListener('click', function () { toggle(!wrap.classList.contains('open')); });
+    wrap.appendChild(btn); wrap.appendChild(list); box.appendChild(wrap);
+    if (!answers[Q.id]) setTimeout(function () { toggle(true); }, reduce ? 0 : 700);
+  }
+  function renderLink(box) {
+    var bad = /facebook\.com|fb\.watch|instagram\.com|tiktok\.com/i;
+    var link = field(box, 'q-link', 'Link', 'url', 'https://…');
+    link.setAttribute('inputmode', 'url'); link.classList.add('q-input-big');
+    var note = el('p', 'q-help', 'YouTube links are read in full.'); box.appendChild(note);
+    function check() {
+      var v = link.value.trim();
+      if (bad.test(v)) { note.innerHTML = ''; note.appendChild(document.createTextNode('Facebook, Instagram and TikTok links can’t be opened automatically. ')); var sw = el('button', 'q-swap', 'Upload the video instead'); sw.type = 'button'; sw.addEventListener('click', function () { answers.have = 'file'; answers.link = ''; render(1); }); note.appendChild(sw); note.appendChild(document.createTextNode(' or add a line about it below, and we’ll work from that.')); }
+      else note.textContent = 'YouTube links are read in full.';
+    }
+    link.addEventListener('input', check); check();
+    field(box, 'q-about', 'In a few words, what is it about? (optional)', 'text', 'Getting your first remote job');
+    setTimeout(function () { link.focus({ preventScroll: true }); }, reduce ? 0 : 420);
+  }
+  function renderUpload(box) {
+    var zone = el('label', 'drop'); zone.setAttribute('for', 'q-file');
+    zone.innerHTML = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" class="d-ring"/><path d="M24 31V17M17.5 23.5L24 17l6.5 6.5" class="d-arrow"/></svg>';
+    var t = el('span', 'drop-t', fileObj ? fileObj.name : 'Tap to choose a video or audio file');
+    var d = el('span', 'drop-d', fileObj ? (fileObj.size / 1048576).toFixed(1) + ' MB · tap to change' : 'or drop it here · up to ' + MAX_MB + ' MB');
+    zone.appendChild(t); zone.appendChild(d); if (fileObj) zone.classList.add('has');
+    var f = document.createElement('input'); f.type = 'file'; f.id = 'q-file'; f.className = 'visually-hidden'; f.accept = 'video/*,audio/*';
+    function take(file) {
+      hideErr(); fileObj = file || null;
+      if (fileObj && fileObj.size > MAX_MB * 1024 * 1024) { showErr('That file is ' + Math.round(fileObj.size / 1048576) + ' MB. The limit is ' + MAX_MB + ' MB, so share a YouTube or Google Drive link instead.'); fileObj = null; f.value = ''; }
+      zone.classList.toggle('has', !!fileObj);
+      t.textContent = fileObj ? fileObj.name : 'Tap to choose a video or audio file';
+      d.textContent = fileObj ? (fileObj.size / 1048576).toFixed(1) + ' MB · tap to change' : 'or drop it here · up to ' + MAX_MB + ' MB';
+    }
+    f.addEventListener('change', function () { take(f.files && f.files[0]); });
+    zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('over'); });
+    zone.addEventListener('dragleave', function () { zone.classList.remove('over'); });
+    zone.addEventListener('drop', function (e) { e.preventDefault(); zone.classList.remove('over'); take(e.dataTransfer.files && e.dataTransfer.files[0]); });
+    box.appendChild(zone); box.appendChild(f);
+    field(box, 'q-about', 'In a few words, what is it about? (optional)', 'text', 'A sermon on faithfulness');
+    box.appendChild(el('p', 'q-where', 'Your file is saved privately in Oluwaseyi Ashiru’s Google Drive and used only to make your pack and follow up with you.'));
   }
   function renderContact(box) {
-    box.appendChild(el('p', 'q-sub', 'Your first step appears straight away. Your full USE Pack, made from what you shared, follows as a PDF.'));
+    box.appendChild(el('p', 'q-sub', 'Your one thing appears here in about a minute. Your full USE Pack, made from what you shared, follows by email as a PDF.'));
     field(box, 'q-name', 'Your name', 'text', 'Ada Okafor').setAttribute('autocomplete', 'name');
     field(box, 'q-email', 'Email (your PDF is sent here)', 'email', 'ada@example.com').setAttribute('autocomplete', 'email');
     field(box, 'q-whatsapp', 'WhatsApp number (optional)', 'tel', '+234 …').setAttribute('autocomplete', 'tel');
@@ -170,7 +231,14 @@
   function showErr(m) { err.textContent = m; err.hidden = false; }
 
   function valid() {
-    var Q = QUESTIONS[step], v = (answers[Q.id] || '').trim();
+    var Q = flow()[step], v = (answers[Q.id] || '').trim();
+    if (Q.kind === 'select') { if (!answers[Q.id]) { showErr('Choose where it came from.'); return false; } return true; }
+    if (Q.kind === 'link') {
+      var LK = (answers.link || '').trim();
+      if (!/^https?:\/\/\S+\.\S+/i.test(LK)) { showErr('Paste the full link. It starts with https://'); return false; }
+      return true;
+    }
+    if (Q.kind === 'upload') { if (!fileObj) { showErr('Choose the file, or go back and pick another option.'); return false; } return true; }
     if (Q.kind === 'source') {
       var L = (answers.link || '').trim();
       if (L && !/^https?:\/\/\S+\.\S+/i.test(L)) { showErr('That link doesn’t look complete. It should start with https://'); return false; }
@@ -189,9 +257,8 @@
 
   function advance() {
     if (!valid()) return;
-    if (step < QUESTIONS.length - 1) { step++; render(1); }
-    else if (ENDPOINT) { waiting(); submit(); }
-    else build(true);
+    if (step < flow().length - 1) { step++; render(1); }
+    else { complete(); if (ENDPOINT) { waiting(); submit(); } else build(true); }
   }
 
   form.addEventListener('submit', function (e) { e.preventDefault(); advance(); });
@@ -365,7 +432,7 @@
 
   /* ---------------- The full USE Pack: sent to the engine, shown here, emailed as a PDF ---------------- */
   var engine = document.getElementById('engine'), engineMsg = document.getElementById('engine-msg'), fullpack = document.getElementById('fullpack');
-  var STAGES = ['Saving your entry', 'Reading what you shared', 'Checking what’s true', 'Putting the steps in order', 'Writing your USE Pack'];
+  var STAGES = ['Finding your one thing', 'Reading what you shared', 'Checking what’s true', 'Putting the steps in order', 'Shaping your one thing'];
 
   function readFile(f) {
     return new Promise(function (res, rej) {
@@ -486,7 +553,23 @@
   /* The opening line flips away into the first question */
   var intro = document.getElementById('intro'), head = document.querySelector('.wiz-head');
   var goBtn = document.getElementById('intro-go');
-  document.getElementById('q-count').textContent = ['', '', '', '', '', '', 'Six', 'Seven', 'Eight'][QUESTIONS.length] || QUESTIONS.length;
+
+  /* Arrival: the noise from the home page drifts in, slows, and settles into one still point */
+  (function () {
+    var box = document.getElementById('settle'); if (!box || reduce || !box.animate) return;
+    var words = ['Sermon', 'TikTok', 'Seminar', 'YouTube', 'AI answer', 'Workshop', 'Podcast', 'Facebook', 'Lecture', 'WhatsApp', 'Webinar', 'Book', 'Instagram', 'Bible study', 'Course', 'Article'];
+    var R = box.getBoundingClientRect(), cx = R.width / 2, cy = Math.min(R.height, 520) * 0.18;
+    words.forEach(function (w, i) {
+      var s = el('span', 'frag', w); box.appendChild(s);
+      var a = Math.random() * Math.PI * 2, d = 160 + Math.random() * Math.max(220, R.width * 0.42);
+      var x0 = cx + Math.cos(a) * d, y0 = cy + 120 + Math.sin(a) * d * 0.55, x1 = cx + Math.cos(a + 1.4) * d * 0.5, y1 = cy + 120 + Math.sin(a + 1.4) * d * 0.3;
+      s.animate([
+        { transform: 'translate(' + x0 + 'px,' + y0 + 'px) translate(-50%,-50%) rotate(' + (Math.random() * 30 - 15) + 'deg)', opacity: 0 },
+        { transform: 'translate(' + x1 + 'px,' + y1 + 'px) translate(-50%,-50%) rotate(' + (Math.random() * 20 - 10) + 'deg)', opacity: .9, offset: .35 },
+        { transform: 'translate(' + cx + 'px,' + (cy + 40) + 'px) translate(-50%,-50%) scale(.2)', opacity: 0 }
+      ], { duration: 2000 + i * 40, delay: i * 25, easing: 'cubic-bezier(.3,.1,.2,1)', fill: 'forwards' }).onfinish = function () { s.remove(); };
+    });
+  })();
 
   /* The button comes alive: it leans toward you and turns from gold to navy as you get close */
   (function () {
