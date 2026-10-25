@@ -1,6 +1,21 @@
 (function () {
   'use strict';
   var OA = window.OA;
+
+  /* the logo writes itself in only once the image has arrived, so the writing is never missed on a slow connection */
+  (function () {
+    var wm = document.querySelector('.wordmark'); if (!wm) return;
+    var started = false;
+    function go() { if (started) return; started = true; requestAnimationFrame(function () { wm.classList.add('go'); }); }
+    function shown() { var imgs = wm.querySelectorAll('img'); for (var i = 0; i < imgs.length; i++) if (getComputedStyle(imgs[i]).display !== 'none') return imgs[i]; return imgs[0]; }
+    function watch() {
+      var img = shown();
+      if (img.complete && img.naturalWidth) { (img.decode ? img.decode() : Promise.resolve()).catch(function () {}).then(go); }
+      else { img.addEventListener('load', go, { once: true }); img.addEventListener('error', go, { once: true }); }
+    }
+    watch(); setTimeout(go, 4000);
+    document.addEventListener('oa-theme', function () { if (!started) watch(); });
+  })();
   var core = document.getElementById('core');
   var halo = core.querySelector('.core-halo');
   var hovering = false, leaving = false;

@@ -11,12 +11,14 @@ body.home { overflow: hidden; display: flex; flex-direction: column; touch-actio
 .wordmark img { width: clamp(150px, 17vw, 220px); height: auto; display: block;
   -webkit-mask-image: linear-gradient(90deg, #000 45%, transparent 55%); mask-image: linear-gradient(90deg, #000 45%, transparent 55%);
   -webkit-mask-size: 240% 100%; mask-size: 240% 100%; -webkit-mask-position: 100% 0; mask-position: 100% 0;
-  animation: write-in 2.1s cubic-bezier(.55, .1, .35, 1) .25s forwards; }
+}
+.wordmark.go img { animation: write-in 2.3s cubic-bezier(.55, .1, .35, 1) .15s forwards; }
 .wm-night { display: none !important; }
 html.is-dark .wm-day { display: none !important; }
 html.is-dark .wm-night { display: block !important; }
 .wm-pen { position: absolute; top: 46%; left: 0; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; background: var(--gold);
-  box-shadow: 0 0 12px 3px color-mix(in srgb, var(--gold) 60%, transparent); opacity: 0; animation: pen-run 2.1s cubic-bezier(.55, .1, .35, 1) .25s forwards; }
+  box-shadow: 0 0 12px 3px color-mix(in srgb, var(--gold) 60%, transparent); opacity: 0; }
+.wordmark.go .wm-pen { animation: pen-run 2.3s cubic-bezier(.55, .1, .35, 1) .15s forwards; }
 @keyframes write-in { to { -webkit-mask-position: 0 0; mask-position: 0 0; } }
 @keyframes pen-run { 0% { left: 0; opacity: 0; } 8% { opacity: 1; } 35% { top: 30%; } 60% { top: 58%; } 90% { opacity: 1; } 100% { left: 100%; top: 44%; opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .wordmark img { animation: none; -webkit-mask-image: none; mask-image: none; } .wm-pen { display: none; } }
