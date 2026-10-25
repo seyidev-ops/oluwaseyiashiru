@@ -14,7 +14,7 @@
  */
 
 var DEFAULTS = {
-  MODEL: 'gemini-2.5-flash',
+  MODEL: 'gemini-3.8-flash',
   OWNER_EMAIL: 'info@oluwaseyiashiru.com',
   DAILY_LIMIT_PER_EMAIL: '3',
   MAX_UPLOAD_MB: '25'
@@ -207,6 +207,18 @@ function downloadVideo(url) {
   } catch (x) { console.warn('downloadVideo: ' + x); return null; }
 }
 
+function pickModel() {
+  try {
+    var r = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { muteHttpExceptions: true, headers: { 'x-goog-api-key': prop('GEMINI_API_KEY') } });
+    var ms = (JSON.parse(r.getContentText()).models || []).filter(function (m) {
+      return (m.supportedGenerationMethods || []).indexOf('generateContent') > -1 && /flash/.test(m.name) && !/lite|image|tts|live|audio|embed|exp/.test(m.name);
+    }).map(function (m) { return m.name.replace('models/', ''); });
+    function ver(n) { var v = (n.match(/(\d+(?:\.\d+)?)/) || [0, 0])[1]; return parseFloat(v) - (/preview/.test(n) ? 0.001 : 0); }
+    ms.sort(function (a, b) { return ver(b) - ver(a); });
+    return ms[0] || '';
+  } catch (x) { return ''; }
+}
+
 function decode(s) { return String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;|&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#(\d+);/g, function (m, n) { return String.fromCharCode(+n); }); }
 function parseJson(t) { try { return JSON.parse(String(t).replace(/^[\s\S]*?```(?:json)?\s*|```[\s\S]*$/g, '').trim()); } catch (e) { var m = String(t).match(/\{[\s\S]*\}/); try { return m ? JSON.parse(m[0]) : null; } catch (e2) { return null; } } }
 
@@ -221,6 +233,10 @@ function gemini(parts, system, o) {
     payload: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: parts }], generationConfig: cfg })
   });
   var code = res.getResponseCode(), body = res.getContentText();
+  if (code === 404 && !o.healed) {                 // Google retired the model: switch to the one it recommends, or the newest Flash, and retry once
+    var next = (body.match(/use models\/([\w.\-]+)/) || [])[1] || pickModel();
+    if (next && next !== prop('MODEL')) { PropertiesService.getScriptProperties().setProperty('MODEL', next); o.healed = true; return gemini(parts, system, o); }
+  }
   if (code !== 200) throw new Error('Gemini ' + code + ': ' + body.slice(0, 400));
   var j = JSON.parse(body), c0 = j.candidates && j.candidates[0];
   if (!c0 || !c0.content) throw new Error('Gemini returned no answer: ' + body.slice(0, 300));
