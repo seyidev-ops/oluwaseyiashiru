@@ -557,7 +557,7 @@
   /* Arrival: the noise from the home page drifts in, slows, and settles into one still point */
   (function () {
     var box = document.getElementById('settle'); if (!box || reduce || !box.animate) return;
-    var words = ['Sermon', 'TikTok', 'Seminar', 'YouTube', 'AI answer', 'Workshop', 'Podcast', 'Facebook', 'Lecture', 'WhatsApp', 'Webinar', 'Book', 'Instagram', 'Bible study', 'Course', 'Article'];
+    var words = ['How-to video', 'Tutorial', 'Training video', 'Seminar', 'Interview', 'Live lesson', 'AI answer', 'Informative post', 'Sermon excerpt', 'Webinar', 'Podcast', 'Workshop', 'YouTube', 'TikTok', 'Course', 'Article'];
     var R = box.getBoundingClientRect(), cx = R.width / 2, cy = Math.min(R.height, 520) * 0.18;
     words.forEach(function (w, i) {
       var s = el('span', 'frag', w); box.appendChild(s);
