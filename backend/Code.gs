@@ -270,18 +270,6 @@ function backupModels() {
   return list;
 }
 
-function pickModel(all) {
-  try {
-    var r = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { muteHttpExceptions: true, headers: { 'x-goog-api-key': prop('GEMINI_API_KEY') } });
-    var ms = (JSON.parse(r.getContentText()).models || []).filter(function (m) {
-      return (m.supportedGenerationMethods || []).indexOf('generateContent') > -1 && /flash/.test(m.name) && !/lite|image|tts|live|audio|embed|exp/.test(m.name);
-    }).map(function (m) { return m.name.replace('models/', ''); });
-    function ver(n) { var v = (n.match(/(\d+(?:\.\d+)?)/) || [0, 0])[1]; return parseFloat(v) - (/preview/.test(n) ? 0.001 : 0); }
-    ms.sort(function (a, b) { return ver(b) - ver(a); });
-    return all ? ms : (ms[0] || '');
-  } catch (x) { return all ? [] : ''; }
-}
-
 function decode(s) { return String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;|&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#(\d+);/g, function (m, n) { return String.fromCharCode(+n); }); }
 function parseJson(t) { try { return JSON.parse(String(t).replace(/^[\s\S]*?```(?:json)?\s*|```[\s\S]*$/g, '').trim()); } catch (e) { var m = String(t).match(/\{[\s\S]*\}/); try { return m ? JSON.parse(m[0]) : null; } catch (e2) { return null; } } }
 
