@@ -50,9 +50,20 @@ function prop(k) { return PropertiesService.getScriptProperties().getProperty(k)
 /* ------------------------------------------------------------------ */
 /* Web app endpoints                                                   */
 /* ------------------------------------------------------------------ */
-function doGet() { return json({ ok: true, service: 'USE Pack engine', ready: !!prop('GEMINI_API_KEY') && !!prop('SHEET_ID') }); }
+function doGet(e) {
+  var p = (e && e.parameter) || {};
+  if (p.check) {                                    // open .../exec?check=1 in a browser to test the setup
+    var out = { ok: true, sheet: !!prop('SHEET_ID'), key_present: !!prop('GEMINI_API_KEY'), model: prop('MODEL') };
+    try { out.gemini = gemini([{ text: 'Reply with the single word: ready' }], 'You are a test.', {}).trim().slice(0, 40); }
+    catch (x) { out.ok = false; out.gemini_error = String(x.message || x); }
+    if (p.url) { try { var s = readSource({ link: p.url }, null); out.source = { kind: s.kind, readable: s.readable, title: s.title, points: (s.points || []).slice(0, 5), note: s.note }; } catch (x2) { out.source_error = String(x2.message || x2); } }
+    return json(out);
+  }
+  return json({ ok: true, service: 'USE Pack engine', ready: !!prop('GEMINI_API_KEY') && !!prop('SHEET_ID') });
+}
 
 function doPost(e) {
+  var stage = 'start';
   try {
     var d = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (d.website) return json({ ok: true, ignored: true });               // honeypot: bots fill hidden fields
@@ -60,17 +71,25 @@ function doPost(e) {
     if (overLimit(d.email)) return json({ ok: false, error: 'You have made several packs today. Please try again tomorrow, or send your link on WhatsApp.' });
 
     var id = 'OA-' + Utilities.formatDate(new Date(), 'Africa/Lagos', 'yyMMdd-HHmm') + '-' + Math.floor(Math.random() * 900 + 100);
-    var upload = saveUpload(d, id);
-    var source = sourceFor(d, upload);
-    var pack = makePack(d, source);
-    var pdf = makePdf(d, pack, id);
-    notifyVisitor(d, pack, pdf);
-    notifyOwner(d, pack, pdf, upload, id);
-    logRow(d, pack, pdf, upload, source, id);
+    stage = 'saving'; var upload = saveUpload(d, id);
+    stage = 'reading'; var source = readSource(d, upload);
+    var described = String(d.what || '').replace(/^Source:[^.]*\.\s*/, '').trim();
+    if (!source.readable && (!described || /^(the link shared|the video shared|what I learned)$/i.test(described))) {
+      return json({ ok: false, code: 'unreadable', error: source.note || 'We couldn’t open what you shared, so we can’t build a step from it yet.', kind: source.kind });
+    }
+    stage = 'thinking'; var pack = makePack(d, source);
+    stage = 'pdf'; var pdf = makePdf(d, pack, id);
+    stage = 'email'; notifyVisitor(d, pack, pdf); notifyOwner(d, pack, pdf, upload, id);
+    stage = 'log'; logRow(d, pack, pdf, upload, source, id);
     return json({ ok: true, id: id, pack: pack, pdf: Utilities.base64Encode(pdf.getBlob().getBytes()), pdfName: pdf.getName() });
   } catch (x) {
-    console.error(x && x.stack || x);
-    return json({ ok: false, error: 'Something went wrong while making your pack. Your first step above still works; please try again in a few minutes.' });
+    console.error('Failed at ' + stage + ': ' + (x && x.stack || x));
+    var m = String(x && x.message || x);
+    var friendly = /API key|API_KEY|PERMISSION_DENIED|403/.test(m) ? 'The AI key in the engine was rejected. (Owner: check GEMINI_API_KEY.)'
+      : /429|RESOURCE_EXHAUSTED|quota/i.test(m) ? 'The AI is busy right now. Please try again in a minute.'
+      : /Timeout|timed out|Exceeded maximum execution/i.test(m) ? 'That took too long to read. Try a shorter clip, or upload just the part that matters.'
+      : 'Something went wrong while ' + ({ reading: 'reading what you shared', thinking: 'working out your first step', pdf: 'making your PDF', email: 'sending your email' }[stage] || 'making your pack') + '. Please try again.';
+    return json({ ok: false, error: friendly, stage: stage, detail: m.slice(0, 300) });
   }
 }
 
@@ -105,15 +124,107 @@ function saveUpload(d, id) {
 }
 
 function isYouTube(url) { return /^(https?:\/\/)?(www\.|m\.)?(youtube\.com\/(watch|shorts|live)|youtu\.be\/)/i.test(url || ''); }
+function isSocial(url) { return /facebook\.com|fb\.watch|instagram\.com|tiktok\.com|x\.com\/|twitter\.com/i.test(url || ''); }
 
-function sourceFor(d, upload) {
-  var link = String(d.link || '').trim();
+/* ------------------------------------------------------------------ */
+/* The source reader: open what they shared, and pull out what it      */
+/* actually teaches, before anything is written for them.              */
+/* ------------------------------------------------------------------ */
+function readSource(d, upload) {
+  var link = String(d.link || '').trim(), parts = [], kind = 'none', meta = {}, note = '';
+
   if (upload && /^(video|audio)\//.test(upload.blob.getContentType())) {
     var f = uploadToGemini(upload.blob);
-    if (f) return { kind: 'file', part: { file_data: { mime_type: f.mimeType, file_uri: f.uri } }, read: true };
+    if (f) { parts.push({ file_data: { mime_type: f.mimeType, file_uri: f.uri } }); kind = 'upload'; }
+    else note = 'We saved your file but couldn’t read it. Try an MP4 video or MP3 audio.';
+  } else if (upload && /pdf|text/.test(upload.blob.getContentType())) {
+    parts.push({ inline_data: { mime_type: upload.blob.getContentType(), data: Utilities.base64Encode(upload.blob.getBytes()) } }); kind = 'upload';
+  } else if (isYouTube(link)) {
+    parts.push({ file_data: { file_uri: link } }); kind = 'youtube';
+  } else if (link) {
+    var page = fetchPage(link);
+    meta = page.meta;
+    if (page.videoUrl) {                           // a public social video exposes its file: read the video itself
+      var vid = downloadVideo(page.videoUrl);
+      if (vid) { var g = uploadToGemini(vid); if (g) { parts.push({ file_data: { mime_type: g.mimeType, file_uri: g.uri } }); kind = 'social-video'; } }
+    }
+    if (!parts.length && page.text && page.text.length > 200) { parts.push({ text: 'PAGE TEXT FROM ' + link + ':\n' + page.text }); kind = 'page'; }
+    if (!parts.length && (meta.description || meta.title)) { parts.push({ text: 'ONLY THE POST CAPTION IS AVAILABLE (the video itself could not be opened).\nTitle: ' + (meta.title || '') + '\nCaption: ' + (meta.description || '') }); kind = 'caption'; }
+    if (!parts.length) kind = 'unopened';
   }
-  if (isYouTube(link)) return { kind: 'youtube', part: { file_data: { file_uri: link } }, read: true };
-  return { kind: link ? 'link' : 'none', part: null, read: false };
+  if (!parts.length) {
+    return { kind: kind, readable: false, points: [], note: note || (link ? (isSocial(link)
+      ? 'That post is private or blocks outside apps, so we couldn’t open it. Upload the video itself, or tell us in a few words what it said.'
+      : 'We couldn’t open that link. Upload the video, or tell us in a few words what it said.') : '') };
+  }
+
+  var sys = [
+    'You read one piece of content a person learned from (a video, audio, page, or post) and report what it ACTUALLY says. Never invent or guess content.',
+    'Pick out the specific, usable teaching: techniques, steps, rules, examples, phrases, numbers, and named methods, with rough timestamps (mm:ss) for audio or video when you can.',
+    'If you only have a caption or the content is unclear, say so in limits and keep points to what is really there.',
+    'Reply with JSON only: {"readable":true,"title":"","creator":"","format":"video|audio|article|post|other","length":"","summary":"two plain sentences","points":[{"point":"short name of the idea","detail":"what exactly it says or shows, in plain words","when":"mm:ss or empty","quote":"a short exact phrase if useful"}],"limits":""}',
+    'Give 3 to 8 points, most usable first. If you cannot see or hear any real content, return {"readable":false,"limits":"why"}.'
+  ].join('\n');
+  var raw = gemini(parts.concat([{ text: 'What the person says it is about: ' + (d.about || d.what || 'not given') }]), sys,
+    { json: true, lowMedia: kind !== 'page' && kind !== 'caption' });
+  var x = parseJson(raw) || {};
+  return {
+    kind: kind, readable: !!x.readable && (x.points || []).length > 0, title: x.title || meta.title || '', creator: x.creator || meta.site || '',
+    format: x.format || '', length: x.length || '', summary: x.summary || '', points: x.points || [], limits: x.limits || '',
+    note: x.readable ? '' : (x.limits || note)
+  };
+}
+
+function fetchPage(url) {
+  var out = { meta: {}, text: '', videoUrl: '' };
+  try {
+    var ua = isSocial(url) ? 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' : 'Mozilla/5.0 (compatible; USEPackReader/1.0)';
+    var r = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true, headers: { 'User-Agent': ua, 'Accept-Language': 'en' } });
+    if (r.getResponseCode() >= 400) return out;
+    var html = r.getContentText();
+    function metaOf(p) { var m = html.match(new RegExp('<meta[^>]+(?:property|name)=["\']' + p + '["\'][^>]*content=["\']([^"\']*)', 'i')) || html.match(new RegExp('<meta[^>]+content=["\']([^"\']*)["\'][^>]*(?:property|name)=["\']' + p + '["\']', 'i')); return m ? decode(m[1]) : ''; }
+    out.meta = { title: metaOf('og:title') || (html.match(/<title[^>]*>([^<]*)/i) || [])[1] || '', description: metaOf('og:description') || metaOf('description'), site: metaOf('og:site_name') };
+    var v = metaOf('og:video:secure_url') || metaOf('og:video:url') || metaOf('og:video');
+    if (!v) { var m2 = html.match(/"(?:browser_native_sd_url|playable_url|video_url|contentUrl)"\s*:\s*"(https?:[^"]+)"/); if (m2) v = m2[1].replace(/\\\//g, '/').replace(/\\u0025/g, '%').replace(/\\u0026/g, '&'); }
+    if (v && /\.(mp4|m4a|mov)|video/i.test(v) && !/youtube\.com\/embed/i.test(v)) out.videoUrl = decode(v);
+    out.text = decode(html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<noscript[\s\S]*?<\/noscript>|<nav[\s\S]*?<\/nav>|<footer[\s\S]*?<\/footer>/gi, ' ')
+      .replace(/<\/(p|div|li|h\d|br|tr)>/gi, '\n').replace(/<[^>]+>/g, ' ')).replace(/[ \t]+/g, ' ').replace(/\n\s*\n+/g, '\n').trim().slice(0, 40000);
+    if (/tiktok\.com/i.test(url) && !out.meta.description) {
+      var o = UrlFetchApp.fetch('https://www.tiktok.com/oembed?url=' + encodeURIComponent(url), { muteHttpExceptions: true });
+      if (o.getResponseCode() === 200) { var oj = JSON.parse(o.getContentText()); out.meta.description = oj.title || ''; out.meta.site = oj.author_name || 'TikTok'; }
+    }
+  } catch (x) { console.warn('fetchPage: ' + x); }
+  return out;
+}
+
+function downloadVideo(url) {
+  try {
+    var r = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0' } });
+    if (r.getResponseCode() !== 200) return null;
+    var b = r.getBlob(); if (b.getBytes().length > 45 * 1024 * 1024) return null;
+    var type = b.getContentType(); if (!/video|audio|octet/.test(type || '')) return null;
+    return b.setContentType(/octet/.test(type) ? 'video/mp4' : type).setName('shared-video.mp4');
+  } catch (x) { console.warn('downloadVideo: ' + x); return null; }
+}
+
+function decode(s) { return String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;|&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#(\d+);/g, function (m, n) { return String.fromCharCode(+n); }); }
+function parseJson(t) { try { return JSON.parse(String(t).replace(/^[\s\S]*?```(?:json)?\s*|```[\s\S]*$/g, '').trim()); } catch (e) { var m = String(t).match(/\{[\s\S]*\}/); try { return m ? JSON.parse(m[0]) : null; } catch (e2) { return null; } } }
+
+/* One call to Gemini. Throws with Google's own message so failures are visible. */
+function gemini(parts, system, o) {
+  o = o || {};
+  var cfg = { temperature: o.temperature == null ? 0.4 : o.temperature };
+  if (o.json) cfg.responseMimeType = 'application/json';
+  if (o.lowMedia) cfg.mediaResolution = 'MEDIA_RESOLUTION_LOW';
+  var res = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + prop('MODEL') + ':generateContent', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { 'x-goog-api-key': prop('GEMINI_API_KEY') },
+    payload: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: parts }], generationConfig: cfg })
+  });
+  var code = res.getResponseCode(), body = res.getContentText();
+  if (code !== 200) throw new Error('Gemini ' + code + ': ' + body.slice(0, 400));
+  var j = JSON.parse(body), c0 = j.candidates && j.candidates[0];
+  if (!c0 || !c0.content) throw new Error('Gemini returned no answer: ' + body.slice(0, 300));
+  return c0.content.parts.map(function (p) { return p.text || ''; }).join('');
 }
 
 /* Gemini Files API: resumable upload, then wait until the video is processed */
@@ -146,68 +257,55 @@ var LABELS = {
 };
 
 function makePack(d, source) {
+  var described = String(d.what || '').replace(/^Source:[^.]*\.\s*/, '').trim();
   var brief = [
-    'VISITOR',
-    'Name: ' + d.name,
-    'What they want to put to use: ' + (LABELS.type[d.type] || d.type),
-    'Life area: ' + (d.fieldLabel || d.field),
-    'Their description: ' + d.what,
+    'VISITOR', 'Name: ' + d.name,
+    'Where they got it: ' + String(d.what || '').replace(/^Source:\s*([^.]*)\..*$/, '$1'),
+    'What they say it is about: ' + (d.about || described || 'not given'),
     'What they want it to do for them: ' + (d.want || ''),
-    'What usually stops them: ' + (LABELS.block[d.block] || d.block),
     'Time they can give today: ' + d.time + ' minutes',
-    'Link they shared: ' + (d.link || 'none'),
-    source.read ? 'The video is attached. Watch and listen to all of it before answering.' :
-      'You CANNOT see the source itself' + (d.link ? ' (the link could not be opened automatically)' : '') + '. Work only from their description, say so in note_to_visitor, and set source_read to false.'
+    'Link: ' + (d.link || 'none'), '',
+    source.readable ? 'WHAT THE SOURCE ACTUALLY SAYS (read from the ' + source.kind + '):\n' + JSON.stringify({ title: source.title, creator: source.creator, format: source.format, length: source.length, summary: source.summary, points: source.points, limits: source.limits })
+      : 'THE SOURCE COULD NOT BE OPENED. Work only from what they described; say so plainly in note_to_visitor.'
   ].join('\n');
 
   var instructions = [
-    'You make knowledge usable for Oluwaseyi Ashiru ("Making Knowledge Usable"). Apply the USE method: Understand it (pick the few points that matter and check them), Simplify it (order the steps, fit them to this person’s life, shrink the first step), Execute it (one first step today, then a 7-day tracker).',
-    'Voice: plain, warm, firm, everyday words a teenager or a grandmother can follow. Short sentences. Local, practical examples (the visitor is likely in Nigeria). No hype, no money promises, no "guaranteed", no invented statistics. Credit the creator of the source.',
-    'Fit everything to the visitor: their life area, what they want, what stops them, and the time they have today. The first step must fit inside their time.',
-    'MOST IMPORTANT: the pack must come from THIS source. First find the specific ideas, techniques, phrases and moments in it (with rough timestamps when you can). Every plan step and the first step must name one of those specific ideas and show how to use it for what the visitor wants. If the source is from another world (a film scene, a sermon, a sports clip) and the visitor wants it for business, work or life, translate the exact technique into their situation, e.g. "In the clip he does X; on your sales call, do X by ...".',
-    'Never give generic advice that could fit any video ("write it in one sentence", "test with three people", "build the smallest version") unless the source itself teaches it. If you catch yourself writing a step that does not mention the source, rewrite it.',
-    'The first step is a concrete task they can start right now, with exactly what to say, write or do, using the source idea, sized to their time.',
-    'If the visitor’s description has typos, read past them; do not repeat the typos in the title.',
-    'In checks, judge each key claim honestly: verdict is one of "Verified", "Partly true", "Opinion", "Caution". Explain why in one sentence. Do not invent sources.',
-    'If the content touches health, money or law, add a caution where needed. Never encourage anything harmful.',
-    'If the life area is Faith, you may add one short Bible verse from the NASB 1995 in faith_note, quoted accurately; otherwise leave faith_note empty.',
-    'The owner section is private, for Oluwaseyi’s team: summarise the person, name their real challenge, judge readiness for the $1 commitment ("Ready", "Needs support" or "Not yet"), and give one concrete next action for the team.',
-    'Reply with JSON only, exactly in this shape:',
+    'You make knowledge usable for Oluwaseyi Ashiru ("Making Knowledge Usable"), using the USE method: Understand it, Simplify it, Execute it.',
+    'THE JOB: give this person ONE first step that comes straight out of THIS source and moves them toward what they want, sized to the time they have today.',
+    'Rules for first_step:',
+    '- It must be built on ONE specific point from the source (name it in from_source, with the timestamp if there is one). Someone who has not seen the source should be able to tell which idea it uses.',
+    '- action: one sentence, starting with a verb, saying exactly what to do with that idea for THEIR goal (e.g. "Rewrite your WhatsApp offer using his 3-part hook (problem, proof, promise) and send it to 5 contacts").',
+    '- how: 2 to 4 tiny concrete sub-steps, including exact words to say or write when useful.',
+    '- done_when: what they will see or have when it is done (proof).',
+    '- Never give generic advice ("write the main point down", "make a plan", "pick one idea", "test with three people") unless the source itself teaches exactly that.',
+    'If the source is from another world (a film, a sermon, sport) translate the exact technique into their situation.',
+    'Voice: plain, warm, firm. Short sentences a teenager or grandmother can follow. Local, practical (they are likely in Nigeria). No hype, no money promises, no invented facts. Credit the creator.',
+    'checks: judge each key claim honestly: "Verified", "Partly true", "Opinion" or "Caution", with a one-line why. Add cautions for health, money or law.',
+    'faith_note: only if the source or their goal is about faith, one short accurate Bible verse from the NASB 1995; else empty.',
+    'owner: private notes for Oluwaseyi’s team: who they are, their real challenge, readiness for the $1 commitment ("Ready", "Needs support" or "Not yet"), and one concrete next action.',
+    'Reply with JSON only, in exactly this shape:',
     JSON.stringify({
-      title: 'short usable headline', source_read: true,
-      source: { title: '', creator: '', length: '', for_whom: '', status: '' },
-      says: ['5 short lines'],
+      title: 'short headline naming the idea and their goal', source_read: true,
+      source: { title: '', creator: '', length: '', for_whom: '', status: 'Read in full | Caption only | From your description' },
+      says: ['3 to 6 short lines of what it actually teaches'],
+      first_step: { from_source: 'the point it uses, e.g. "The 3-part hook (02:15)"', action: '', how: ['', ''], time: 'minutes', done_when: '' },
+      plan: [{ step: '1. ...', what: 'each step also tied to a point from the source', time: '', proof: '' }],
       checks: [{ claim: '', verdict: '', why: '' }],
-      plan: [{ step: '1. ...', what: '', time: '', proof: '' }],
-      first_step: { action: '', time: '', result: '' },
       tracker: [{ day: 1, morning: '', evening: '' }],
       stuck: [{ problem: '', fix: '' }],
-      faith_note: '',
-      note_to_visitor: '',
+      faith_note: '', note_to_visitor: '',
       owner: { summary: '', challenge: '', readiness: '', next_action: '' }
     }),
-    'Use 3 to 5 plan steps, exactly 7 tracker days, and 3 stuck items.'
+    'Use 3 plan steps after the first step, exactly 7 tracker days, and 3 stuck items.'
   ].join('\n');
 
-  var parts = [];
-  if (source.part) parts.push(source.part);
-  parts.push({ text: brief });
-  var res = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + prop('MODEL') + ':generateContent?key=' + prop('GEMINI_API_KEY'), {
-    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-    payload: JSON.stringify({
-      systemInstruction: { parts: [{ text: instructions }] },
-      contents: [{ role: 'user', parts: parts }],
-      generationConfig: { temperature: 0.5, responseMimeType: 'application/json' }
-    })
-  });
-  var body = JSON.parse(res.getContentText());
-  if (res.getResponseCode() !== 200 && source.part) {          // the video could not be read: retry from the description only
-    console.warn('Video read failed, retrying without it: ' + res.getContentText().slice(0, 300));
-    return makePack(d, { kind: 'failed', part: null, read: false });
-  }
-  var text = body.candidates && body.candidates[0] && body.candidates[0].content.parts.map(function (p) { return p.text || ''; }).join('');
-  var pack = JSON.parse(String(text).replace(/^```json\s*|```$/g, ''));
-  pack.source_read = !!(pack.source_read && source.read);
+  var pack = parseJson(gemini([{ text: brief }], instructions, { json: true, temperature: 0.5 }));
+  if (!pack || !pack.first_step || !pack.first_step.action) throw new Error('The answer came back incomplete.');
+  pack.first_step.result = pack.first_step.result || pack.first_step.done_when || '';
+  pack.source_read = !!source.readable;
+  pack.source = pack.source || {};
+  if (!pack.source.title && source.title) pack.source.title = source.title;
+  if (!pack.source.creator && source.creator) pack.source.creator = source.creator;
   return pack;
 }
 
@@ -231,7 +329,7 @@ function packHtml(d, p, forOwner) {
     h2('What it says') + '<ol style="font-size:12px;line-height:1.6">' + (p.says || []).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' +
     h2('Is it true?') + table(['Claim', 'Verdict', 'Why'], (p.checks || []).map(function (c) { return [c.claim, c.verdict, c.why]; })) +
     h2('The action plan') + table(['Step', 'What to do', 'Time', 'Done', 'Proof you’ll have'], (p.plan || []).map(function (c) { return [c.step, c.what, c.time, '☐', c.proof]; })) +
-    '<div style="background:' + navy + ';color:#F7F5F0;border-radius:10px;padding:14px 16px;margin:18px 0"><p style="font-family:Georgia,serif;color:' + gold + ';font-size:18px;margin:0 0 6px">Your first step today</p><p style="margin:0 0 6px;font-size:13px">' + esc(p.first_step && p.first_step.action) + '</p><p style="margin:0;font-size:11px;color:#C9CEDA">Time: ' + esc(p.first_step && p.first_step.time) + ' · Result: ' + esc(p.first_step && p.first_step.result) + '</p></div>' +
+    '<div style="background:' + navy + ';color:#F7F5F0;border-radius:10px;padding:14px 16px;margin:18px 0"><p style="font-family:Georgia,serif;color:' + gold + ';font-size:18px;margin:0 0 6px">Your one thing today</p>' + (p.first_step && p.first_step.from_source ? '<p style="margin:0 0 6px;font-size:11px;color:' + gold + '">From the source: ' + esc(p.first_step.from_source) + '</p>' : '') + '<p style="margin:0 0 6px;font-size:13px">' + esc(p.first_step && p.first_step.action) + '</p>' + (p.first_step && p.first_step.how && p.first_step.how.length ? '<ol style="margin:0 0 8px;padding-left:18px;font-size:12px">' + p.first_step.how.map(function (h) { return '<li>' + esc(h) + '</li>'; }).join('') + '</ol>' : '') + '<p style="margin:0;font-size:11px;color:#C9CEDA">Time: ' + esc(p.first_step && p.first_step.time) + ' · Result: ' + esc(p.first_step && p.first_step.result) + '</p></div>' +
     h2('Seven-day tracker') + table(['Day', 'Morning', 'Evening', 'Done'], (p.tracker || []).map(function (t) { return [t.day, t.morning, t.evening, '☐']; })) +
     h2('If you get stuck') + table(['If this happens', 'Do this'], (p.stuck || []).map(function (c) { return [c.problem, c.fix]; })) +
     (p.faith_note ? '<p style="font-family:Georgia,serif;font-size:13px;border-left:3px solid ' + gold + ';padding-left:10px">' + esc(p.faith_note) + '</p>' : '') +
@@ -278,7 +376,7 @@ function logRow(d, p, pdf, upload, source, id) {
     var o = p.owner || {};
     SpreadsheetApp.openById(prop('SHEET_ID')).getSheetByName('Entries').appendRow([
       new Date(), id, d.name, d.email, d.whatsapp || '', LABELS.type[d.type] || d.type, d.fieldLabel || d.field, d.what, d.want || '',
-      LABELS.block[d.block] || d.block, d.time + ' min', d.link || '', upload ? upload.file.getUrl() : '', p.source_read ? 'Yes' : 'No (from description)',
+      LABELS.block[d.block] || d.block, d.time + ' min', d.link || '', upload ? upload.file.getUrl() : '', p.source_read ? 'Yes (' + source.kind + ')' : 'No (' + source.kind + ')',
       pdf.getUrl(), o.readiness || '', o.challenge || '', o.next_action || '', 'Free', 'Pack sent'
     ]);
   } finally { lock.releaseLock(); }

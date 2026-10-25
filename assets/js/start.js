@@ -394,16 +394,22 @@
   function fromPack(p) {
     var s = p.source || {}, F = FIELD[answers.field] || FIELD.other;
     current = {
-      source: (s.title ? s.title + (s.creator ? ' · ' + s.creator : '') : (TYPE_LABEL[answers.type] || 'Your entry')) + ' · ' + F.label,
+      source: s.title ? s.title + (s.creator ? ' · ' + s.creator : '') : whereOf(answers.where)[1],
       title: p.title || 'Your USE Pack',
       steps: (p.plan || []).slice(0, 3).map(function (x) { return [String(x.step || '').replace(/^\d+\.\s*/, ''), x.what || '']; }),
       note: p.note_to_visitor || '',
-      first: p.first_step ? p.first_step.action + (p.first_step.time ? ' (' + p.first_step.time + ')' : '') : ''
+      first: p.first_step ? p.first_step.action : ''
     };
     document.getElementById('u-source').textContent = current.source;
     document.getElementById('card-title').textContent = current.title;
     document.getElementById('u-note').textContent = current.note;
     document.getElementById('u-first').textContent = current.first;
+    var uf = card.querySelector('.u-first'); uf.querySelectorAll('.u-from, .u-how, .u-meta').forEach(function (x) { x.remove(); });
+    var fs = p.first_step || {}, lab = uf.querySelector('.u-first-label');
+    if (fs.from_source) lab.insertAdjacentElement('afterend', el('p', 'u-from', 'From what you shared: ' + fs.from_source));
+    if (fs.how && fs.how.length) { var hl = el('ol', 'u-how'); fs.how.forEach(function (h) { hl.appendChild(el('li', null, h)); }); document.getElementById('u-first').insertAdjacentElement('afterend', hl); }
+    var meta = [fs.time ? 'Time: ' + fs.time : '', fs.done_when ? 'Done when: ' + fs.done_when : ''].filter(Boolean).join(' · ');
+    if (meta) uf.querySelector('.done-check').insertAdjacentElement('beforebegin', el('p', 'u-meta', meta));
     var ol = document.getElementById('u-steps'); ol.innerHTML = '';
     current.steps.forEach(function (st) { var li = el('li'), d = el('div'); d.appendChild(el('strong', null, st[0])); d.appendChild(el('span', null, st[1])); li.appendChild(d); ol.appendChild(li); });
     done.checked = false; afterDone.hidden = true; card.classList.remove('is-done');
@@ -455,12 +461,12 @@
         name: (answers.name || '').trim(), email: (answers.email || '').trim(), whatsapp: (answers.whatsapp || '').trim(),
         consent: !!answers.consent, website: answers.website || '',
         type: answers.type, field: answers.field, fieldLabel: F.label, what: answers.what, want: answers.want,
-        block: answers.block, time: answers.time, link: (answers.link || '').trim(), file: file
+        block: answers.block, time: answers.time, link: (answers.link || '').trim(), about: (answers.about || '').trim(), file: file
       };
       return fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
     }).then(function (r) { return r.json(); }).then(function (out) {
       clearInterval(timer); engine.classList.remove('working');
-      if (!out.ok) throw new Error(out.error || 'failed');
+      if (!out.ok) { var er = new Error(out.error || 'failed'); er.code = out.code; er.detail = out.detail; throw er; }
       engine.classList.add('done');
       engineMsg.textContent = 'Your full USE Pack is below. A PDF copy is on its way to ' + answers.email + '.';
       fromPack(out.pack); renderPack(out.pack);
@@ -473,9 +479,26 @@
       save({ packId: out.id });
     }).catch(function (e) {
       clearInterval(timer); engine.classList.remove('working'); engine.classList.add('failed');
-      var m = e && e.message && e.message !== 'failed' && e.message.length > 12 ? e.message : 'We couldn’t read it right now, so here is a quick first step from your answers.';
-      card.hidden = false; document.getElementById('after').hidden = false; build(false);
-      engineMsg.textContent = m + ' You can also send your link on WhatsApp: +2347033134979.';
+      if (e && e.detail) console.warn('Engine detail:', e.detail);
+      var offline = !e || !e.message || /Failed to fetch|NetworkError|Load failed/i.test(e.message);
+      engineMsg.textContent = offline ? 'We couldn’t reach the engine. Check your connection and try again.' : e.message;
+      /* never hand back a generic step: offer a way to give us something we can read */
+      var acts = el('div', 'engine-acts');
+      function act(label, cls, fn) { var b = el('button', 'btn ' + cls, label); b.type = 'button'; b.addEventListener('click', fn); acts.appendChild(b); }
+      function backTo(have) {
+        answers.have = have; if (have !== 'link') answers.link = ''; if (have !== 'file') fileObj = null;
+        answers.what = ''; result.hidden = true; engine.hidden = true; wizard.hidden = false; form.hidden = false;
+        document.querySelector('.wiz-head').hidden = false; step = flow().findIndex(function (Q) { return Q.id === (have === 'file' ? 'upload' : have === 'none' ? 'what' : 'link'); });
+        stage.innerHTML = ''; render(1);
+      }
+      if (e && e.code === 'unreadable') {
+        act('Upload the video instead', 'btn-solid', function () { backTo('file'); });
+        act('Tell us what it said', 'btn-line', function () { backTo('none'); });
+      } else {
+        act('Try again', 'btn-solid', function () { acts.remove(); submit(); });
+        act('Share it another way', 'btn-line', function () { backTo('file'); });
+      }
+      engine.querySelector('.engine-status').appendChild(acts);
     });
   }
 
@@ -498,7 +521,10 @@
     if (p.plan && p.plan.length) { h('The action plan'); table(['Step', 'What to do', 'Time', 'Proof you’ll have'], p.plan.map(function (c) { return [c.step, c.what, c.time, c.proof]; })); }
     if (p.first_step) {
       var fb = el('div', 'fp-first'); fb.appendChild(el('p', 'fp-first-label', 'Your first step today'));
-      fb.appendChild(el('p', 'fp-first-text', p.first_step.action)); fb.appendChild(el('p', 'fp-first-meta', 'Time: ' + (p.first_step.time || '') + ' · Result: ' + (p.first_step.result || '')));
+      if (p.first_step.from_source) fb.appendChild(el('p', 'fp-first-meta', 'From the source: ' + p.first_step.from_source));
+      fb.appendChild(el('p', 'fp-first-text', p.first_step.action));
+      if (p.first_step.how && p.first_step.how.length) { var fh = el('ol', 'u-how'); p.first_step.how.forEach(function (h) { fh.appendChild(el('li', null, h)); }); fb.appendChild(fh); }
+      fb.appendChild(el('p', 'fp-first-meta', 'Time: ' + (p.first_step.time || '') + ' · Done when: ' + (p.first_step.done_when || p.first_step.result || '')));
       fullpack.appendChild(fb);
     }
     if (p.tracker && p.tracker.length) { h('Seven-day tracker'); table(['Day', 'Morning', 'Evening'], p.tracker.map(function (t) { return [t.day, t.morning, t.evening]; })); }

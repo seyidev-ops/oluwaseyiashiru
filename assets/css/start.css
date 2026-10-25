@@ -269,3 +269,11 @@
 .ucard .u-first { margin: 6px 0 22px; padding: 22px 22px 18px; }
 .u-first-label { font-size: 1.5rem; }
 .u-then { margin: 0 0 4px; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+
+/* the one thing, tied to the source */
+.u-from { margin: -2px 0 10px; font-size: .8rem; letter-spacing: .04em; color: #D4A24C; font-weight: 600; }
+.u-how { margin: 10px 0 12px; padding-left: 1.2em; color: #DCE0EA; font-size: .95rem; line-height: 1.55; }
+.u-how li { margin-bottom: 4px; }
+.u-meta { margin: 0 0 12px; font-size: .84rem; color: #A9B0C2; }
+.engine.failed .engine-status { flex-direction: column; text-align: center; padding: 34px 20px; }
+.engine-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 6px; }
