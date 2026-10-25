@@ -207,7 +207,7 @@ function downloadVideo(url) {
   } catch (x) { console.warn('downloadVideo: ' + x); return null; }
 }
 
-function pickModel() {
+function pickModel(all) {
   try {
     var r = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { muteHttpExceptions: true, headers: { 'x-goog-api-key': prop('GEMINI_API_KEY') } });
     var ms = (JSON.parse(r.getContentText()).models || []).filter(function (m) {
@@ -215,8 +215,71 @@ function pickModel() {
     }).map(function (m) { return m.name.replace('models/', ''); });
     function ver(n) { var v = (n.match(/(\d+(?:\.\d+)?)/) || [0, 0])[1]; return parseFloat(v) - (/preview/.test(n) ? 0.001 : 0); }
     ms.sort(function (a, b) { return ver(b) - ver(a); });
-    return ms[0] || '';
-  } catch (x) { return ''; }
+    return all ? ms : (ms[0] || '');
+  } catch (x) { return all ? [] : ''; }
+}
+
+function decode(s) { return String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;|&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#(\d+);/g, function (m, n) { return String.fromCharCode(+n); }); }
+function parseJson(t) { try { return JSON.parse(String(t).replace(/^[\s\S]*?```(?:json)?\s*|```[\s\S]*$/g, '').trim()); } catch (e) { var m = String(t).match(/\{[\s\S]*\}/); try { return m ? JSON.parse(m[0]) : null; } catch (e2) { return null; } } }
+
+/* One call to Gemini, made sturdy: retries brief hiccups, drops optional settings if they cause trouble,
+   moves to a backup model when one is overloaded, and switches for good if a model is retired. */
+function gemini(parts, system, o) {
+  o = o || {};
+  var models = [prop('MODEL')].concat(backupModels()), lastErr = '';
+  for (var m = 0; m < models.length; m++) {
+    var lowMedia = !!o.lowMedia;
+    for (var attempt = 0; attempt < 3; attempt++) {
+      var cfg = { temperature: o.temperature == null ? 0.4 : o.temperature };
+      if (o.json) cfg.responseMimeType = 'application/json';
+      if (lowMedia) cfg.mediaResolution = 'MEDIA_RESOLUTION_LOW';
+      var res = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + models[m] + ':generateContent', {
+        method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { 'x-goog-api-key': prop('GEMINI_API_KEY') },
+        payload: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: parts }], generationConfig: cfg })
+      });
+      var code = res.getResponseCode(), body = res.getContentText();
+      if (code === 200) {
+        var j = JSON.parse(body), c0 = j.candidates && j.candidates[0];
+        var text = c0 && c0.content && c0.content.parts ? c0.content.parts.map(function (p) { return p.text || ''; }).join('') : '';
+        if (text) { if (m > 0) console.warn('Answered by backup model ' + models[m]); return text; }
+        lastErr = 'Gemini returned no answer: ' + body.slice(0, 200); break;
+      }
+      lastErr = 'Gemini ' + code + ' (' + models[m] + '): ' + body.slice(0, 300);
+      if (code === 404) {                            // retired model: take Google's suggested replacement and keep it
+        var next = (body.match(/use models\/([\w.\-]+)/) || [])[1];
+        if (next && models.indexOf(next) < 0) { if (m === 0) PropertiesService.getScriptProperties().setProperty('MODEL', next); models.splice(m + 1, 0, next); }
+        break;
+      }
+      if (code === 400 && lowMedia) { lowMedia = false; continue; }      // a setting this model dislikes: drop it and retry
+      if (code === 400 || code === 401 || code === 403) throw new Error(lastErr);
+      if (code === 500 && lowMedia) lowMedia = false;
+      if (code === 429 || code >= 500) { Utilities.sleep([1500, 4000, 0][attempt]); continue; }   // busy or hiccup: wait and retry
+      break;
+    }
+  }
+  throw new Error(lastErr || 'Gemini did not answer');
+}
+
+function backupModels() {
+  var cached = CacheService.getScriptCache().get('backupModels');
+  if (cached) return JSON.parse(cached);
+  var list = [], best = pickModel(true);
+  best.forEach(function (n) { if (n !== prop('MODEL') && list.length < 2) list.push(n); });
+  if (list.indexOf('gemini-flash-latest') < 0) list.push('gemini-flash-latest');
+  CacheService.getScriptCache().put('backupModels', JSON.stringify(list), 21600);
+  return list;
+}
+
+function pickModel(all) {
+  try {
+    var r = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { muteHttpExceptions: true, headers: { 'x-goog-api-key': prop('GEMINI_API_KEY') } });
+    var ms = (JSON.parse(r.getContentText()).models || []).filter(function (m) {
+      return (m.supportedGenerationMethods || []).indexOf('generateContent') > -1 && /flash/.test(m.name) && !/lite|image|tts|live|audio|embed|exp/.test(m.name);
+    }).map(function (m) { return m.name.replace('models/', ''); });
+    function ver(n) { var v = (n.match(/(\d+(?:\.\d+)?)/) || [0, 0])[1]; return parseFloat(v) - (/preview/.test(n) ? 0.001 : 0); }
+    ms.sort(function (a, b) { return ver(b) - ver(a); });
+    return all ? ms : (ms[0] || '');
+  } catch (x) { return all ? [] : ''; }
 }
 
 function decode(s) { return String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;|&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#(\d+);/g, function (m, n) { return String.fromCharCode(+n); }); }
