@@ -270,30 +270,6 @@ function backupModels() {
   return list;
 }
 
-function decode(s) { return String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;|&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#(\d+);/g, function (m, n) { return String.fromCharCode(+n); }); }
-function parseJson(t) { try { return JSON.parse(String(t).replace(/^[\s\S]*?```(?:json)?\s*|```[\s\S]*$/g, '').trim()); } catch (e) { var m = String(t).match(/\{[\s\S]*\}/); try { return m ? JSON.parse(m[0]) : null; } catch (e2) { return null; } } }
-
-/* One call to Gemini. Throws with Google's own message so failures are visible. */
-function gemini(parts, system, o) {
-  o = o || {};
-  var cfg = { temperature: o.temperature == null ? 0.4 : o.temperature };
-  if (o.json) cfg.responseMimeType = 'application/json';
-  if (o.lowMedia) cfg.mediaResolution = 'MEDIA_RESOLUTION_LOW';
-  var res = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + prop('MODEL') + ':generateContent', {
-    method: 'post', contentType: 'application/json', muteHttpExceptions: true, headers: { 'x-goog-api-key': prop('GEMINI_API_KEY') },
-    payload: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: parts }], generationConfig: cfg })
-  });
-  var code = res.getResponseCode(), body = res.getContentText();
-  if (code === 404 && !o.healed) {                 // Google retired the model: switch to the one it recommends, or the newest Flash, and retry once
-    var next = (body.match(/use models\/([\w.\-]+)/) || [])[1] || pickModel();
-    if (next && next !== prop('MODEL')) { PropertiesService.getScriptProperties().setProperty('MODEL', next); o.healed = true; return gemini(parts, system, o); }
-  }
-  if (code !== 200) throw new Error('Gemini ' + code + ': ' + body.slice(0, 400));
-  var j = JSON.parse(body), c0 = j.candidates && j.candidates[0];
-  if (!c0 || !c0.content) throw new Error('Gemini returned no answer: ' + body.slice(0, 300));
-  return c0.content.parts.map(function (p) { return p.text || ''; }).join('');
-}
-
 /* Gemini Files API: resumable upload, then wait until the video is processed */
 function uploadToGemini(blob) {
   var key = prop('GEMINI_API_KEY'), bytes = blob.getBytes();
