@@ -76,7 +76,14 @@ html.is-dark .core-shadow { background: radial-gradient(closest-side, #000, rgba
 .core-words { width: 100%; height: 100%; overflow: visible; animation: ringspin 26s linear infinite; }
 .call-ring:has(.rw-about:hover) .core-words, .call-ring:has(.rw-about:focus-visible) .core-words { animation-play-state: paused; }
 .rw-about { pointer-events: auto; cursor: pointer; }
-.rw-about tspan { fill: var(--ink); font-weight: 700; }
+.rw-about tspan { fill: var(--ink); font-weight: 700; animation: about-glow 2.4s ease-in-out infinite; }
+@keyframes about-glow { 50% { fill: var(--gold-ink); } }
+.about-ptr { pointer-events: none; }
+.about-ptr path { fill: none; stroke: var(--gold); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.about-ptr .ap-dot { fill: var(--ink); }
+.ap-bob { animation: ap-bob 1.1s ease-in-out infinite; }
+@keyframes ap-bob { 50% { transform: translateX(7px); } }
+.call-ring:has(.rw-about:hover) .ap-bob { animation-duration: .5s; }
 .rw-about:hover tspan, .rw-about:focus-visible tspan { text-decoration: underline; }
 .rw-about:focus-visible { outline: none; }
 .core-words text { font-family: var(--body); font-weight: 600; font-size: 12px; letter-spacing: .12em; white-space: pre; text-transform: uppercase; fill: var(--gold-ink); }

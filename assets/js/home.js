@@ -75,7 +75,15 @@
     }
     instr.style.fontSize = aboutText.style.fontSize = size + 'px';
     used = instr.getComputedTextLength();
-    about.setAttribute('startOffset', ((used + L) / 2).toFixed(1));
+    var mid = (used + L) / 2;
+    about.setAttribute('startOffset', mid.toFixed(1));
+    /* an arrow outside the ring points in at About and travels round with it */
+    var ptr = document.getElementById('about-ptr');
+    if (ptr) {
+      var pt = ringPath.getPointAtLength(mid % L), ux = pt.x - 150, uy = pt.y - 150, ul = Math.sqrt(ux * ux + uy * uy) || 1;
+      var R = 138 + size * 1.1 + 24, ang = Math.atan2(uy, ux) * 180 / Math.PI + 180;
+      ptr.setAttribute('transform', 'translate(' + (150 + ux / ul * R).toFixed(1) + ',' + (150 + uy / ul * R).toFixed(1) + ') rotate(' + ang.toFixed(1) + ')');
+    }
   }
 
   /* the quote stays on one line: shrink to fit; on very narrow screens let it break at the sentence */

@@ -486,7 +486,25 @@
   /* The opening line flips away into the first question */
   var intro = document.getElementById('intro'), head = document.querySelector('.wiz-head');
   var goBtn = document.getElementById('intro-go');
-  document.querySelector('.intro-sub').textContent = 'Seminars, sermons, videos, AI answers: you\u2019ve heard plenty. ' + (['', '', '', '', '', '', 'Six', 'Seven', 'Eight'][QUESTIONS.length] || QUESTIONS.length) + ' short questions turn one of them into steps you can take today.';
+  document.getElementById('q-count').textContent = ['', '', '', '', '', '', 'Six', 'Seven', 'Eight'][QUESTIONS.length] || QUESTIONS.length;
+
+  /* The button comes alive: it leans toward you and turns from gold to navy as you get close */
+  (function () {
+    if (reduce) return;
+    var raf = 0, px = -1e4, py = -1e4;
+    function tick() {
+      raf = 0; if (intro.hidden) return;
+      var r = goBtn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var dx = px - cx, dy = py - cy, d = Math.sqrt(dx * dx + dy * dy), reach = 220;
+      var p = Math.max(0, Math.min(1, 1 - (d - r.width * 0.35) / reach));
+      goBtn.style.setProperty('--p', p.toFixed(3));
+      var pull = d < reach ? (1 - d / reach) : 0;
+      goBtn.style.setProperty('--mx', (dx * 0.18 * pull).toFixed(1) + 'px'); goBtn.style.setProperty('--my', (dy * 0.25 * pull).toFixed(1) + 'px');
+    }
+    window.addEventListener('pointermove', function (e) { if (e.pointerType === 'touch') return; px = e.clientX; py = e.clientY; if (!raf) raf = requestAnimationFrame(tick); }, { passive: true });
+    document.addEventListener('pointerleave', function () { px = py = -1e4; tick(); });
+    goBtn.addEventListener('touchstart', function () { goBtn.classList.add('pressed'); }, { passive: true });
+  })();
   function begin() {
     function show() { intro.hidden = true; head.hidden = false; form.hidden = false; render(0); var t = stage.querySelector('input, textarea'); if (t) t.focus({ preventScroll: true }); }
     if (reduce || !intro.animate) return show();
