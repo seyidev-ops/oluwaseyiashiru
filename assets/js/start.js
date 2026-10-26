@@ -468,8 +468,8 @@
       clearInterval(timer); engine.classList.remove('working');
       if (!out.ok) { var er = new Error(out.error || 'failed'); er.code = out.code; er.detail = out.detail; throw er; }
       engine.classList.add('done');
-      engineMsg.textContent = out.locked ? 'Your one thing is above, and it’s in your email too. Your full pack is ready below.' : 'Your full USE Pack is below.';
-      fromPack(out.pack); renderPack(out.pack); if (out.locked) gate(out.pack);
+      engineMsg.textContent = out.locked ? 'Your one thing is above, and it’s in your email too. Your full pack is ready below.' : 'Your full USE Pack is below' + (out.member ? ' (Deeper Systems: ' + out.member + ' of 10 this month)' : '') + '. A copy is in your email.';
+      if (out.locked) { fromPack(out.pack); renderPack(out.pack); gate(out.pack); } else showFull(out);
       if (out.pdf) {
         var bytes = atob(out.pdf), arr = new Uint8Array(bytes.length);
         for (var k = 0; k < bytes.length; k++) arr[k] = bytes.charCodeAt(k);

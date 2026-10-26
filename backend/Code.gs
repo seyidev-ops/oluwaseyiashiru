@@ -86,8 +86,13 @@ function doPost(e) {
     stage = 'thinking'; var pack = makePack(d, source);
     stage = 'pdf'; var pdf = makePdf(d, pack, id);
     stage = 'save'; savePack(id, d, pack, pdf);
-    stage = 'email'; notifyVisitor(d, pack, id); notifyOwner(d, pack, pdf, upload, id);
+    var isMember = memberUse(d.email);
+    stage = 'email';
+    if (isMember) MailApp.sendEmail({ to: d.email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'Your USE Pack: ' + pack.title, htmlBody: '<p>Hello ' + esc(d.name) + ',</p><p>Your full USE Pack is attached and below (Deeper Systems: ' + isMember + ' of 10 this month).</p>' + packHtml(d, pack, false) + '<p>Now use it.</p>', attachments: [pdf.getBlob()] });
+    else notifyVisitor(d, pack, id);
+    notifyOwner(d, pack, pdf, upload, id);
     stage = 'log'; logRow(d, pack, pdf, upload, source, id);
+    if (isMember) { markRow(id, 'Member', 'Pack ' + isMember + ' of 10'); return json({ ok: true, id: id, locked: false, member: isMember, pack: pack, pdf: Utilities.base64Encode(pdf.getBlob().getBytes()), pdfName: pdf.getName() }); }
     return json({ ok: true, id: id, locked: true, pack: freePart(pack) });
   } catch (x) {
     console.error('Failed at ' + stage + ': ' + (x && x.stack || x));
@@ -485,6 +490,19 @@ function member(d) {
       htmlBody: '<p>Welcome' + (name ? ', ' + esc(name.split(' ')[0]) : '') + '.</p><p>Your Deeper Systems month has started: ten full USE Packs from your own links and uploads. Use this email address on the Start page and your packs open in full.</p><p>Now use it.<br>Oluwaseyi Ashiru</p>' });
   }
   return { ok: true, email: email };
+}
+
+/* Members get up to 10 full packs a calendar month. Returns the pack number this month, or 0. */
+function memberUse(email) {
+  email = String(email || '').toLowerCase().trim(); if (!email) return 0;
+  var sh = SpreadsheetApp.openById(prop('SHEET_ID')).getSheetByName('Members'); if (!sh || sh.getLastRow() < 2) return 0;
+  var rows = sh.getRange(2, 1, sh.getLastRow() - 1, 10).getValues(), idx = -1;
+  for (var i = rows.length - 1; i >= 0; i--) if (String(rows[i][1]).toLowerCase() === email && rows[i][9] === 'Active') { idx = i; break; }
+  if (idx < 0) return 0;
+  var key = 'MUSE_' + email + '_' + Utilities.formatDate(new Date(), 'Africa/Lagos', 'yyyyMM'), props = PropertiesService.getScriptProperties();
+  var n = Number(props.getProperty(key) || 0); if (n >= 10) return 0;
+  props.setProperty(key, String(n + 1)); sh.getRange(idx + 2, 9).setValue(n + 1);
+  return n + 1;
 }
 
 /* Speaking requests from speak.html: a row in "Bookings" and an email to the owner. */
