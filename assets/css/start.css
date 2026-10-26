@@ -297,3 +297,14 @@
 .ghost-row { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 10px; }
 .ghost-row span { height: 14px; border-radius: 7px; background: color-mix(in srgb, var(--ink) 18%, transparent); }
 .locked-inner { min-height: 520px; }
+
+/* progress you can measure, and the warning for login-walled links */
+.e-bar { width: min(360px, 80%); height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 12%, transparent); overflow: hidden; }
+.e-fill { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #B07F2A, #D4A24C, #F2C77A); transition: width .4s linear; }
+.e-pct { margin: 0; font: 600 .95rem var(--body); color: var(--gold-ink); font-variant-numeric: tabular-nums; }
+.e-note { margin: 0; max-width: 40ch; color: var(--muted); font-size: .95rem; }
+.engine.working .engine-status p#engine-msg { margin-bottom: 4px; }
+.q-warn { color: var(--ink); background: color-mix(in srgb, var(--gold) 14%, transparent); padding: 12px 14px; border-radius: 12px; }
+.q-sub a { color: var(--gold-ink); font-weight: 600; }
+.ul-mail { margin: 8px 0 0; font-size: .82rem; color: var(--muted); }
+.locked-inner { max-height: 1100px; }

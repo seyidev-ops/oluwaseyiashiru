@@ -12,14 +12,15 @@
     document.getElementById('plan-chip').hidden = false;
     document.getElementById('plan-empty').hidden = true;
     document.getElementById('plan-title').textContent = title;
-    first = a.what ? 'From: “' + a.what.trim() + '”' : '';
+    first = plan.pack && plan.pack.first_step ? 'Your one thing: ' + plan.pack.first_step.action : (a.what ? 'From: “' + a.what.replace(/^Source:\s*/, '').trim() + '”' : '');
+    if (plan.pack && plan.pack.title) document.getElementById('plan-title').textContent = plan.pack.title;
     document.getElementById('plan-first').textContent = first;
-    document.getElementById('plan-status').textContent = plan.done ? 'First step done. You reached point B.' : 'First step not ticked yet. The next level works best after it.';
+    document.getElementById('plan-status').textContent = plan.member ? 'Deeper Systems member: your packs open in full.' : plan.unlocked ? 'Full pack unlocked. It is saved on the Start page.' : plan.done ? 'First step done. You reached point B.' : 'First step not ticked yet. The next level works best after it.';
   }
 
   /* ---------- Where you are on the stairs ---------- */
   var rungs = document.querySelectorAll('#stairs li');
-  var here = plan && plan.committed ? 2 : 1;
+  var here = plan && plan.member ? 3 : plan && (plan.committed || plan.unlocked) ? 2 : 1;
   rungs.forEach(function (li, i) {
     if (i + 1 < here || (i === 0 && plan && plan.done)) li.classList.add('reached');
     if (i + 1 === here) li.classList.add('here');
@@ -104,6 +105,7 @@
   var id = plan && plan.packId, pay = document.getElementById('pay'), L = (window.OA_PAY && window.OA_PAY.link) || '';
   var wa = 'https://wa.me/2347033134979?text=' + encodeURIComponent('Hello Oluwaseyi, I want to unlock my full USE Pack for $1.' + (id ? ' My pack number is ' + id + '.' : ''));
   pay.href = L || wa; if (!L) { pay.target = '_blank'; pay.rel = 'noopener'; pay.textContent = 'Unlock for $1 on WhatsApp'; }
+  if (plan && (plan.unlocked || plan.member)) { pay.href = 'start.html'; pay.removeAttribute('target'); pay.textContent = 'Open my full pack'; L = ''; }
   pay.addEventListener('click', function (e) {
     if (!L) return;
     if (!id) { e.preventDefault(); document.getElementById('copy-msg').textContent = 'Make your first step on the Start page first, then come back to unlock it.'; return; }

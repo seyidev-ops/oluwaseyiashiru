@@ -20,12 +20,23 @@
   var QUESTIONS = [
     { id: 'where', kind: 'select', q: 'Where did you last pick up something you’d like to put to use?', opts: WHERE },
     { id: 'have', kind: 'choice', when: function () { return !!ENDPOINT; },
-      q: function (a) { return a.where === 'ai' ? 'Do you have the answer with you?' : 'Do you have it with you?'; },
-      opts: [['link', 'I have the link', 'YouTube, Facebook, a website…'], ['file', 'I have the video or audio', 'On my phone or computer'], ['none', 'I don’t, but I can tell you about it', 'A few words is enough']] },
-    { id: 'link', kind: 'link', when: function (a) { return a.have === 'link'; }, q: 'Paste the link here.' },
+      q: function (a) { return a.where === 'ai' ? 'How can you share the answer?' : 'How can you share it with us?'; },
+      sub: function (a) { return a.where === 'social' ? 'Facebook, Instagram, TikTok, X and LinkedIn keep their videos behind a login, so their links can’t be read automatically. Download the video and upload it, or paste what was said. <a href="commit.html#tiers-title">Inner Circle</a> members can simply send us any link and we do it for them.' : ''; },
+      opts: function (a) {
+        var o = [];
+        if (a.where !== 'social') o.push(['link', 'A YouTube link', 'Or a link to an article or blog post']);
+        o.push(['file', 'The video or audio file', 'Downloaded to your phone or computer, up to 25 MB']);
+        o.push(['text', 'A transcript or the words', 'Paste what was said or written']);
+        o.push(['none', 'I’ll describe it', 'A few lines in your own words']);
+        return o;
+      } },
+    { id: 'link', kind: 'link', when: function (a) { return a.have === 'link'; }, q: 'Paste the YouTube link here.' },
+    { id: 'transcript', kind: 'text', big: true, when: function (a) { return a.have === 'text'; }, q: 'Paste the transcript or the words.',
+      ph: function () { return 'Paste what was said in the video, the sermon notes, the post or the AI answer…'; } },
     { id: 'upload', kind: 'upload', when: function (a) { return a.have === 'file'; }, q: 'Add the video or audio.' },
     { id: 'what', kind: 'text', when: function (a) { return !ENDPOINT || a.have === 'none'; },
       q: function (a) { return 'What was it about? Say it the way you’d tell a friend.'; },
+      sub: function () { return 'The more you tell us, the sharper your step: what was said, the main points, any example that stood out.'; },
       ph: function (a) { return { church: 'The pastor taught on faithfulness in small things', ai: 'ChatGPT explained how to price my services', school: 'Our lecturer explained how to write a business plan' }[a.where] || 'A video on getting your first remote job'; } },
     { id: 'want', kind: 'line', q: 'What do you want it to do for you?',
       ph: function (a) { return { church: 'Be more consistent in prayer this month', ai: 'Send my first price list to clients', school: 'Pass my exam with a better grade' }[a.where] || 'Land my first remote interview'; } },
@@ -39,7 +50,7 @@
     var W = whereOf(answers.where);
     answers.type = 'learned'; answers.block = answers.block || 'start'; answers.field = W[3];
     var said = (answers.what || '').trim(), about = (answers.about || '').trim();
-    answers.what = 'Source: ' + W[1] + '. ' + (said || about || (answers.link ? 'the link shared' : fileObj ? 'the video shared' : 'what I learned'));
+    answers.what = 'Source: ' + W[1] + '. ' + (said || about || (answers.transcript ? 'Transcript shared' : answers.link ? 'Link shared' : fileObj ? 'Video shared' : 'What I learned'));
   }
 
   var answers = {}, step = 0;
@@ -63,12 +74,14 @@
     var Q = flow()[step];
     var box = el('fieldset', 'q' + (Q.compact ? ' compact' : ''));
     var legend = el('legend', 'q-title', txt(Q.q));
+    var subTxt = Q.sub ? txt(Q.sub) : '';
     legend.id = 'wiz-q';
     box.appendChild(legend);
+    if (subTxt) { var sb = el('p', 'q-sub'); sb.innerHTML = subTxt; box.appendChild(sb); }
 
     if (Q.kind === 'choice') {
       var list = el('div', 'choices');
-      Q.opts.forEach(function (o, i) {
+      txt(Q.opts).forEach(function (o, i) {
         var lab = el('label', 'choice');
         var inp = document.createElement('input');
         inp.type = 'radio'; inp.name = Q.id; inp.value = o[0]; inp.id = 'q-' + Q.id + '-' + o[0];
@@ -98,7 +111,7 @@
       var lab2 = el('label', 'visually-hidden', txt(Q.q)); lab2.setAttribute('for', id);
       var input = document.createElement(Q.kind === 'text' ? 'textarea' : 'input');
       input.id = id; input.name = Q.id; input.className = 'q-input';
-      if (Q.kind === 'text') input.rows = 3;
+      if (Q.kind === 'text') input.rows = Q.big ? 10 : 4;
       input.placeholder = txt(Q.ph);
       input.value = answers[Q.id] || '';
       input.setAttribute('aria-describedby', 'q-error');
@@ -179,14 +192,20 @@
     if (!answers[Q.id]) setTimeout(function () { toggle(true); }, reduce ? 0 : 700);
   }
   function renderLink(box) {
-    var bad = /facebook\.com|fb\.watch|instagram\.com|tiktok\.com/i;
-    var link = field(box, 'q-link', 'Link', 'url', 'https://…');
+    var bad = /facebook\.com|fb\.watch|instagram\.com|tiktok\.com|x\.com\/|twitter\.com|linkedin\.com/i;
+    var link = field(box, 'q-link', 'Link', 'url', 'https://youtu.be/…');
     link.setAttribute('inputmode', 'url'); link.classList.add('q-input-big');
-    var note = el('p', 'q-help', 'YouTube links are read in full.'); box.appendChild(note);
+    var note = el('div', 'q-help'); box.appendChild(note);
     function check() {
       var v = link.value.trim();
-      if (bad.test(v)) { note.innerHTML = ''; note.appendChild(document.createTextNode('Facebook, Instagram and TikTok links can’t be opened automatically. ')); var sw = el('button', 'q-swap', 'Upload the video instead'); sw.type = 'button'; sw.addEventListener('click', function () { answers.have = 'file'; answers.link = ''; render(1); }); note.appendChild(sw); note.appendChild(document.createTextNode(' or add a line about it below, and we’ll work from that.')); }
-      else note.textContent = 'YouTube links are read in full.';
+      note.innerHTML = '';
+      if (bad.test(v)) {
+        note.className = 'q-help q-warn';
+        note.appendChild(document.createTextNode('That platform keeps its videos behind a login, so its links can’t be read automatically. '));
+        var a1 = el('button', 'q-swap', 'Upload the video'); a1.type = 'button'; a1.addEventListener('click', function () { answers.have = 'file'; answers.link = ''; render(1); });
+        var a2 = el('button', 'q-swap', 'paste the transcript'); a2.type = 'button'; a2.addEventListener('click', function () { answers.have = 'text'; answers.link = ''; render(1); });
+        note.appendChild(a1); note.appendChild(document.createTextNode(' or ')); note.appendChild(a2); note.appendChild(document.createTextNode(' instead.'));
+      } else { note.className = 'q-help'; note.textContent = 'YouTube videos are watched in full. Articles and blog posts are read in full.'; }
     }
     link.addEventListener('input', check); check();
     field(box, 'q-about', 'In a few words, what is it about? (optional)', 'text', 'Getting your first remote job');
@@ -236,6 +255,7 @@
     if (Q.kind === 'link') {
       var LK = (answers.link || '').trim();
       if (!/^https?:\/\/\S+\.\S+/i.test(LK)) { showErr('Paste the full link. It starts with https://'); return false; }
+      if (/facebook\.com|fb\.watch|instagram\.com|tiktok\.com|x\.com\/|twitter\.com|linkedin\.com/i.test(LK)) { showErr('Links from that platform can’t be read. Upload the video or paste the transcript instead.'); return false; }
       return true;
     }
     if (Q.kind === 'upload') { if (!fileObj) { showErr('Choose the file, or go back and pick another option.'); return false; } return true; }
@@ -251,6 +271,7 @@
       return true;
     }
     if (Q.kind === 'choice' && !v) { showErr('Choose one answer to continue.'); return false; }
+    if (Q.id === 'transcript' && v.length < 80) { showErr('Paste a little more, at least a few sentences, so there is something real to work from.'); return false; }
     if (Q.kind !== 'choice' && v.length < 3) { showErr('Write a few words so the plan fits you.'); var i = stage.querySelector('.q-input'); if (i) i.focus(); return false; }
     return true;
   }
@@ -453,22 +474,40 @@
   function submit() {
     engine.hidden = false; fullpack.innerHTML = ''; document.getElementById('pdf-dl').hidden = true;
     engine.classList.remove('done', 'failed'); engine.classList.add('working');
-    var i = 0; engineMsg.textContent = STAGES[0] + '…';
-    var timer = setInterval(function () { i = Math.min(STAGES.length - 1, i + 1); engineMsg.textContent = STAGES[i] + '…'; }, 9000);
+    var expect = { file: 95, link: 70, text: 35, none: 30 }[answers.have] || 45, t0 = Date.now(), pct = 0;
+    var what = { file: 'your video', link: 'your link', text: 'your transcript', none: 'what you told us' }[answers.have] || 'what you shared';
+    var es = engine.querySelector('.engine-status'), bar = es.querySelector('.e-bar');
+    if (!bar) { bar = el('div', 'e-bar'); bar.innerHTML = '<span class="e-fill"></span>'; es.appendChild(bar); es.appendChild(el('p', 'e-pct')); es.appendChild(el('p', 'e-note')); }
+    var pctEl = es.querySelector('.e-pct'), noteEl = es.querySelector('.e-note'), fillEl = bar.querySelector('.e-fill');
+    bar.hidden = pctEl.hidden = noteEl.hidden = false;
+    noteEl.textContent = 'We’re working on ' + what + '. This usually takes ' + (expect > 60 ? 'about a minute or two' : 'under a minute') + '. Please keep this page open.';
+    function setPct(p) { pct = p; fillEl.style.width = p + '%'; pctEl.textContent = Math.round(p) + '% done'; }
+    function tickPct() {
+      var s = (Date.now() - t0) / 1000, k = s / expect;
+      var p = k < 1 ? 90 * k : Math.min(97, 90 + 7 * (1 - Math.exp(-(s - expect) / 40)));
+      setPct(Math.max(pct, p));
+      engineMsg.textContent = STAGES[Math.min(STAGES.length - 1, Math.floor(pct / 20))] + '…';
+      if (s > expect * 1.4) noteEl.textContent = 'Almost there. Longer videos take a little more time. Thank you for your patience.';
+    }
+    setPct(2); var i = 0; tickPct();
+    var timer = setInterval(tickPct, 400);
     var F = FIELD[answers.field] || FIELD.other;
     readFile(fileObj).then(function (file) {
       var payload = {
         name: (answers.name || '').trim(), email: (answers.email || '').trim(), whatsapp: (answers.whatsapp || '').trim(),
         consent: !!answers.consent, website: answers.website || '',
         type: answers.type, field: answers.field, fieldLabel: F.label, what: answers.what, want: answers.want,
-        block: answers.block, time: answers.time, link: (answers.link || '').trim(), about: (answers.about || '').trim(), file: file
+        block: answers.block, time: answers.time, link: (answers.link || '').trim(), about: (answers.about || '').trim(), transcript: answers.have === 'text' ? (answers.transcript || '').trim() : '', file: file
       };
       return fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
     }).then(function (r) { return r.json(); }).then(function (out) {
-      clearInterval(timer); engine.classList.remove('working');
+      clearInterval(timer); setPct(100);
+      return new Promise(function (res) { setTimeout(function () { res(out); }, reduce ? 0 : 600); });
+    }).then(function (out) {
+      engine.classList.remove('working'); ['.e-bar', '.e-pct', '.e-note'].forEach(function (s) { var n = engine.querySelector(s); if (n) n.hidden = true; });
       if (!out.ok) { var er = new Error(out.error || 'failed'); er.code = out.code; er.detail = out.detail; throw er; }
       engine.classList.add('done');
-      engineMsg.textContent = out.locked ? 'Your one thing is above, and it’s in your email too. Your full pack is ready below.' : 'Your full USE Pack is below' + (out.member ? ' (Deeper Systems: ' + out.member + ' of 10 this month)' : '') + '. A copy is in your email.';
+      engineMsg.textContent = out.locked ? 'Your one thing is above. Commit $1 and your full USE Pack opens here, with the PDF sent to your email.' : 'Your full USE Pack is below' + (out.member ? ' (Deeper Systems: ' + out.member + ' of 10 this month)' : '') + '. A copy is in your email.';
       if (out.locked) { fromPack(out.pack); renderPack(out.pack); gate(out.pack); } else showFull(out);
       if (out.pdf) {
         var bytes = atob(out.pdf), arr = new Uint8Array(bytes.length);
@@ -478,7 +517,7 @@
       }
       save({ packId: out.id, pack: out.pack, unlocked: !out.locked });
     }).catch(function (e) {
-      clearInterval(timer); engine.classList.remove('working'); engine.classList.add('failed');
+      clearInterval(timer); engine.classList.remove('working'); engine.classList.add('failed'); ['.e-bar', '.e-pct', '.e-note'].forEach(function (s) { var n = engine.querySelector(s); if (n) n.hidden = true; });
       if (e && e.detail) console.warn('Engine detail:', e.detail);
       var offline = !e || !e.message || /Failed to fetch|NetworkError|Load failed/i.test(e.message);
       engineMsg.textContent = offline ? 'We couldn’t reach the engine. Check your connection and try again.' : e.message;
@@ -488,12 +527,12 @@
       function backTo(have) {
         answers.have = have; if (have !== 'link') answers.link = ''; if (have !== 'file') fileObj = null;
         answers.what = ''; result.hidden = true; engine.hidden = true; wizard.hidden = false; form.hidden = false;
-        document.querySelector('.wiz-head').hidden = false; step = flow().findIndex(function (Q) { return Q.id === (have === 'file' ? 'upload' : have === 'none' ? 'what' : 'link'); });
+        document.querySelector('.wiz-head').hidden = false; step = flow().findIndex(function (Q) { return Q.id === ({ file: 'upload', none: 'what', text: 'transcript' }[have] || 'link'); });
         stage.innerHTML = ''; render(1);
       }
       if (e && e.code === 'unreadable') {
-        act('Upload the video instead', 'btn-solid', function () { backTo('file'); });
-        act('Tell us what it said', 'btn-line', function () { backTo('none'); });
+        act('Upload the video', 'btn-solid', function () { backTo('file'); });
+        act('Paste the transcript', 'btn-line', function () { backTo('text'); });
       } else {
         act('Try again', 'btn-solid', function () { acts.remove(); submit(); });
         act('Share it another way', 'btn-line', function () { backTo('file'); });
@@ -543,10 +582,11 @@
       var tb = el('div', 'ghost-table'); for (var i = 0; i < rows; i++) { var r = el('div', 'ghost-row'); r.appendChild(el('span')); r.appendChild(el('span')); r.appendChild(el('span')); tb.appendChild(r); }
       inner.appendChild(tb);
     }
+    Array.prototype.slice.call(fullpack.children).forEach(function (n) { if (!n.classList.contains('fp-sign')) inner.appendChild(n); });
     ghost('The action plan', t.plan || 3); ghost('Is it true?', t.checks || 2); ghost('Seven-day tracker', 4); ghost('If you get stuck', t.stuck || 3);
     over.innerHTML = '<span class="ul-ring" aria-hidden="true"></span><p class="ul-k">Your full USE Pack is ready</p><h3>Unlock the whole plan for $1</h3>' +
       '<ul><li>Every step after this one, tied to what you shared</li><li>Truth check on each key claim</li><li>Seven-day tracker and “if you get stuck” fixes</li><li>Saved on your device, PDF download, copy to your email</li></ul>' +
-      '<a class="btn btn-gold" href="commit.html#commit">Commit $1 to unlock</a>';
+      '<a class="btn btn-gold" href="commit.html#commit">Commit $1 to unlock</a><p class="ul-mail">Includes the PDF, sent to your email.</p>';
     box.appendChild(inner); box.appendChild(over);
     var sign = fullpack.querySelector('.fp-sign'); if (sign) fullpack.insertBefore(box, sign); else fullpack.appendChild(box);
     var dup = fullpack.querySelector('.fp-first'); if (dup) dup.remove();

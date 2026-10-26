@@ -80,7 +80,7 @@ function doPost(e) {
     stage = 'saving'; var upload = saveUpload(d, id);
     stage = 'reading'; var source = readSource(d, upload);
     var described = String(d.what || '').replace(/^Source:[^.]*\.\s*/, '').trim();
-    if (!source.readable && (!described || /^(the link shared|the video shared|what I learned)$/i.test(described))) {
+    if (!source.readable && (!described || /^(the link shared|the video shared|what I learned|link shared|video shared|transcript shared)$/i.test(described))) {
       return json({ ok: false, code: 'unreadable', error: source.note || 'We couldn’t open what you shared, so we can’t build a step from it yet.', kind: source.kind });
     }
     stage = 'thinking'; var pack = makePack(d, source);
@@ -89,7 +89,6 @@ function doPost(e) {
     var isMember = memberUse(d.email);
     stage = 'email';
     if (isMember) MailApp.sendEmail({ to: d.email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'Your USE Pack: ' + pack.title, htmlBody: '<p>Hello ' + esc(d.name) + ',</p><p>Your full USE Pack is attached and below (Deeper Systems: ' + isMember + ' of 10 this month).</p>' + packHtml(d, pack, false) + '<p>Now use it.</p>', attachments: [pdf.getBlob()] });
-    else notifyVisitor(d, pack, id);
     notifyOwner(d, pack, pdf, upload, id);
     stage = 'log'; logRow(d, pack, pdf, upload, source, id);
     if (isMember) { markRow(id, 'Member', 'Pack ' + isMember + ' of 10'); return json({ ok: true, id: id, locked: false, member: isMember, pack: pack, pdf: Utilities.base64Encode(pdf.getBlob().getBytes()), pdfName: pdf.getName() }); }
@@ -151,8 +150,14 @@ function readSource(d, upload) {
     else note = 'We saved your file but couldn’t read it. Try an MP4 video or MP3 audio.';
   } else if (upload && /pdf|text/.test(upload.blob.getContentType())) {
     parts.push({ inline_data: { mime_type: upload.blob.getContentType(), data: Utilities.base64Encode(upload.blob.getBytes()) } }); kind = 'upload';
+  } else if (String(d.transcript || '').trim().length > 80) {
+    parts.push({ text: 'TRANSCRIPT OR TEXT THE PERSON PASTED:\n' + String(d.transcript).slice(0, 60000) }); kind = 'transcript';
   } else if (isYouTube(link)) {
     parts.push({ file_data: { file_uri: link } }); kind = 'youtube';
+    try {                                          // the real title and channel, straight from YouTube
+      var oe = UrlFetchApp.fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent(link), { muteHttpExceptions: true });
+      if (oe.getResponseCode() === 200) { var oj = JSON.parse(oe.getContentText()); meta = { title: oj.title || '', site: oj.author_name ? oj.author_name + ' (YouTube)' : 'YouTube', channel: oj.author_url || '' }; parts.push({ text: 'Known facts from YouTube: title "' + meta.title + '", channel "' + (oj.author_name || '') + '".' }); }
+    } catch (x) {}
   } else if (link) {
     var page = fetchPage(link);
     meta = page.meta;
@@ -166,8 +171,8 @@ function readSource(d, upload) {
   }
   if (!parts.length) {
     return { kind: kind, readable: false, points: [], note: note || (link ? (isSocial(link)
-      ? 'That post is private or blocks outside apps, so we couldn’t open it. Upload the video itself, or tell us in a few words what it said.'
-      : 'We couldn’t open that link. Upload the video, or tell us in a few words what it said.') : '') };
+      ? 'Facebook, Instagram, TikTok, X and LinkedIn keep their videos behind a login, so links from there can’t be read automatically. Upload the video itself or paste its transcript, and your step will be built from it.'
+      : 'That page keeps its content behind a login. Upload the video or paste the transcript, and your step will be built from it.') : '') };
   }
 
   var sys = [
@@ -181,7 +186,7 @@ function readSource(d, upload) {
     { json: true, lowMedia: kind !== 'page' && kind !== 'caption' });
   var x = parseJson(raw) || {};
   return {
-    kind: kind, readable: !!x.readable && (x.points || []).length > 0, title: x.title || meta.title || '', creator: x.creator || meta.site || '',
+    kind: kind, readable: !!x.readable && (x.points || []).length > 0, title: meta.title || x.title || '', creator: (meta.site && kind === 'youtube') ? meta.site : (x.creator && !/unknown/i.test(x.creator) ? x.creator : meta.site || ''),
     format: x.format || '', length: x.length || '', summary: x.summary || '', points: x.points || [], limits: x.limits || '',
     note: x.readable ? '' : (x.limits || note)
   };
@@ -335,6 +340,8 @@ function makePack(d, source) {
     '- Never give generic advice ("write the main point down", "make a plan", "pick one idea", "test with three people") unless the source itself teaches exactly that.',
     'If the source is from another world (a film, a sermon, sport) translate the exact technique into their situation.',
     'Voice: plain, warm, firm. Short sentences a teenager or grandmother can follow. Local, practical (they are likely in Nigeria). No hype, no money promises, no invented facts. Credit the creator.',
+    'note_to_visitor: one warm line on what this pack will help them do. Never say anything could not be opened, read, watched or found.',
+    'source: fill title, creator (the person or channel by name; use the known facts given), length, who it is for, and status ("Read in full" or "From your transcript" or "From your description"). Never write "Unknown": if a fact is not known, leave that field empty.',
     'checks: judge each key claim honestly: "Verified", "Partly true", "Opinion" or "Caution", with a one-line why. Add cautions for health, money or law.',
     'faith_note: only if the source or their goal is about faith, one short accurate Bible verse from the NASB 1995; else empty.',
     'owner: private notes for Oluwaseyi’s team: who they are, their real challenge, readiness for the $1 commitment ("Ready", "Needs support" or "Not yet"), and one concrete next action.',
