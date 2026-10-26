@@ -59,3 +59,10 @@ URL stays the same.
 6. In Apps Script, **Project Settings ▸ Script properties ▸ Add**: `PAYSTACK_SECRET_KEY` = that secret key. Optionally `PAY_MIN_NGN` (default 1000) to set the lowest naira amount that counts as a valid unlock.
 
 The secret key stays in Script Properties only. Never put it in the website code.
+
+## 7. Deeper Systems ($5 a month)
+
+1. In Paystack, **Products ▸ Plans ▸ Create plan**: "Deeper Systems", monthly, ₦7,500 (or $5).
+2. **Payment Pages ▸ Create page ▸ Subscription**, choose that plan.
+3. Set **Redirect after payment** to `https://seyidev-ops.github.io/oluwaseyiashiru/commit.html?plan=monthly`.
+4. Send the page link to Claude. New members appear in a **Members** tab in your Sheet, and both of you get an email.

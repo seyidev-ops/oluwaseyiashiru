@@ -111,3 +111,20 @@
   var monthly = document.querySelector('[data-plan="monthly"]');
   if (monthly) { monthly.href = 'https://wa.me/2347033134979?text=' + encodeURIComponent('Hello Oluwaseyi, I want Deeper Systems (10 packs a month).'); monthly.target = '_blank'; monthly.rel = 'noopener'; }
 })();
+
+/* Back from the $5 monthly checkout (redirect to commit.html?plan=monthly) */
+(function () {
+  var q = new URLSearchParams(location.search), ref = q.get('reference') || q.get('trxref');
+  if (!ref) return;
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  var box = document.createElement('section'); box.className = 'welcome'; box.setAttribute('role', 'status');
+  box.innerHTML = '<p class="n-kick">Deeper Systems</p><h2>Confirming your membership…</h2><p class="w-msg"></p>';
+  var hero = document.querySelector('.n-hero'); hero.insertAdjacentElement('afterend', box);
+  box.scrollIntoView({ block: 'center' });
+  var url = (window.OA_ENDPOINT || '').trim(), h = box.querySelector('h2'), p = box.querySelector('.w-msg');
+  fetch(url, { method: 'POST', body: JSON.stringify({ action: 'member', reference: ref }) }).then(function (r) { return r.json(); }).then(function (o) {
+    if (!o.ok) { h.textContent = 'We couldn’t confirm it yet.'; p.textContent = o.error; return; }
+    try { var s = JSON.parse(localStorage.getItem('oa-plan') || '{}'); s.member = o.email || true; localStorage.setItem('oa-plan', JSON.stringify(s)); } catch (e) {}
+    h.textContent = 'Welcome to Deeper Systems.'; p.textContent = 'Your month has started. A welcome email is on its way' + (o.email ? ' to ' + o.email : '') + '. Your ten packs a month open in full on the Start page.';
+  }).catch(function () { h.textContent = 'We couldn’t reach the engine.'; p.textContent = 'Refresh this page to try again. Your payment is safe.'; });
+})();

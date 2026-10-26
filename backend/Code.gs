@@ -72,6 +72,7 @@ function doPost(e) {
     if (d.website) return json({ ok: true, ignored: true });               // honeypot: bots fill hidden fields
     if (d.action === 'unlock') { stage = 'unlock'; return json(unlock(d)); }
     if (d.action === 'booking') { stage = 'booking'; return json(booking(d)); }
+    if (d.action === 'member') { stage = 'member'; return json(member(d)); }
     var err = validate(d); if (err) return json({ ok: false, error: err });
     if (overLimit(d.email)) return json({ ok: false, error: 'You have made several packs today. Please try again tomorrow, or send your link on WhatsApp.' });
 
@@ -460,6 +461,30 @@ function markRow(id, stage, status) {
   var sh = SpreadsheetApp.openById(prop('SHEET_ID')).getSheetByName('Entries'), last = sh.getLastRow(); if (last < 2) return;
   var ids = sh.getRange(2, 2, last - 1, 1).getValues();
   for (var i = ids.length - 1; i >= 0; i--) if (ids[i][0] === id) { sh.getRange(i + 2, 19, 1, 2).setValues([[stage, status]]); return; }
+}
+
+/* Deeper Systems ($5 a month): confirm the subscription payment, record the member, tell both sides. */
+function member(d) {
+  var ref = String(d.reference || '').trim(), secret = prop('PAYSTACK_SECRET_KEY');
+  if (!ref) return { ok: false, error: 'No payment reference came back from the checkout.' };
+  if (!secret) return { ok: false, error: 'Payments are not switched on yet. Message +2347033134979 on WhatsApp.' };
+  var props = PropertiesService.getScriptProperties();
+  var r = UrlFetchApp.fetch('https://api.paystack.co/transaction/verify/' + encodeURIComponent(ref), { muteHttpExceptions: true, headers: { Authorization: 'Bearer ' + secret } });
+  var v = JSON.parse(r.getContentText() || '{}'), t = v.data || {}, cust = t.customer || {};
+  if (!v.status || t.status !== 'success') return { ok: false, error: 'We couldn’t confirm that payment yet. If you were charged, message +2347033134979 on WhatsApp.' };
+  var email = cust.email || '', first = props.getProperty('MREF_' + ref);
+  if (!first) {
+    props.setProperty('MREF_' + ref, email || 'yes');
+    var ss = SpreadsheetApp.openById(prop('SHEET_ID')), sh = ss.getSheetByName('Members');
+    var H = ['Joined', 'Email', 'Name', 'Phone', 'Plan', 'Amount', 'Currency', 'Reference', 'Packs used this month', 'Status'];
+    if (!sh) { sh = ss.insertSheet('Members'); sh.getRange(1, 1, 1, H.length).setValues([H]).setFontWeight('bold').setBackground('#14213D').setFontColor('#F7F5F0'); sh.setFrozenRows(1); }
+    var name = [cust.first_name, cust.last_name].filter(Boolean).join(' ');
+    sh.appendRow([new Date(), email, name, cust.phone || '', (t.plan_object && t.plan_object.name) || 'Deeper Systems', Number(t.amount) / 100, t.currency, ref, 0, 'Active']);
+    MailApp.sendEmail({ to: prop('OWNER_EMAIL'), subject: 'New Deeper Systems member: ' + (name || email), body: 'Email: ' + email + '\nName: ' + name + '\nAmount: ' + (Number(t.amount) / 100) + ' ' + t.currency + '\nReference: ' + ref });
+    if (email) MailApp.sendEmail({ to: email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'Welcome to Deeper Systems',
+      htmlBody: '<p>Welcome' + (name ? ', ' + esc(name.split(' ')[0]) : '') + '.</p><p>Your Deeper Systems month has started: ten full USE Packs from your own links and uploads. Use this email address on the Start page and your packs open in full.</p><p>Now use it.<br>Oluwaseyi Ashiru</p>' });
+  }
+  return { ok: true, email: email };
 }
 
 /* Speaking requests from speak.html: a row in "Bookings" and an email to the owner. */
