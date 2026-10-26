@@ -109,7 +109,8 @@
     if (!id) { e.preventDefault(); document.getElementById('copy-msg').textContent = 'Make your first step on the Start page first, then come back to unlock it.'; return; }
   });
   var monthly = document.querySelector('[data-plan="monthly"]');
-  if (monthly) { monthly.href = 'https://wa.me/2347033134979?text=' + encodeURIComponent('Hello Oluwaseyi, I want Deeper Systems (10 packs a month).'); monthly.target = '_blank'; monthly.rel = 'noopener'; }
+  var ML = (window.OA_PAY && window.OA_PAY.monthly) || '';
+  if (monthly) { monthly.href = ML || 'https://wa.me/2347033134979?text=' + encodeURIComponent('Hello Oluwaseyi, I want Deeper Systems (10 packs a month).'); if (!ML) { monthly.target = '_blank'; monthly.rel = 'noopener'; } }
 })();
 
 /* Back from the $5 monthly checkout (redirect to commit.html?plan=monthly) */

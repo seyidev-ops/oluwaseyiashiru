@@ -18,4 +18,4 @@ window.OA_LINKS = {
 
 /* OA_PAY.link: your Paystack payment page for the $1 unlock (set its "redirect after payment" to .../start.html).
    While empty, the unlock button opens WhatsApp with the visitor's pack number instead. */
-window.OA_PAY = { link: '' };
+window.OA_PAY = { link: 'https://paystack.shop/pay/1dollarc', monthly: 'https://paystack.shop/pay/deepersystems' };
