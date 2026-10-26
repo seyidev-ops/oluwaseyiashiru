@@ -56,7 +56,7 @@ URL stays the same.
 3. In the page settings, set **Redirect after payment** to `https://seyidev-ops.github.io/oluwaseyiashiru/start.html`.
 4. Copy the page link (it looks like `https://paystack.com/pay/...`) and send it to Claude, or paste it into `assets/js/config.js` as `window.OA_PAY = { link: 'https://paystack.com/pay/...' };`.
 5. In Paystack, go to **Settings ▸ API Keys & Webhooks** and copy your **Live Secret Key**.
-6. In Apps Script, **Project Settings ▸ Script properties ▸ Add**: `PAYSTACK_SECRET_KEY` = that secret key. Optionally `PAY_MIN_NGN` (default 1000) to set the lowest naira amount that counts as a valid unlock.
+6. In Apps Script, **Project Settings ▸ Script properties ▸ Add**: `PAYSTACK_SECRET_KEY` = that secret key. Optionally `PAY_MIN_NGN` (default 1500) to set the lowest naira amount that counts as a valid unlock.
 
 The secret key stays in Script Properties only. Never put it in the website code.
 

@@ -19,7 +19,7 @@ var DEFAULTS = {
   DAILY_LIMIT_PER_EMAIL: '3',
   MAX_UPLOAD_MB: '25',
   SITE_URL: 'https://seyidev-ops.github.io/oluwaseyiashiru/',
-  PAY_MIN_NGN: '1000',
+  PAY_MIN_NGN: '1500',
   PAY_MIN_USD: '1'
 };
 
