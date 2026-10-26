@@ -13,9 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=20261026d">
-<link rel="stylesheet" href="assets/css/commit2.css?v=20261026d">
-<link rel="stylesheet" href="assets/css/speak.css?v=20261026d">
+<link rel="stylesheet" href="assets/css/site.css?v=20261026e">
+<link rel="stylesheet" href="assets/css/commit2.css?v=20261026e">
+<link rel="stylesheet" href="assets/css/speak.css?v=20261026e">
 </head>
 <body class="inner">
 <canvas class="threads" aria-hidden="true"></canvas>
@@ -42,55 +42,83 @@
 <main class="inner-main">
   <section class="sp-hero">
     <div class="wrap sp-hero-grid">
-      <div>
-        <p class="n-kick">Speaking</p>
-        <h1>Your people heard it.<br><em>Now they’ll use it.</em></h1>
-        <p class="sp-lede">Invite Oluwaseyi Ashiru to your church, school, company or conference. Every session ends the same way: each person leaves with one step they can take that day.</p>
-        <div class="sp-actions"><a class="btn btn-gold" href="#book">Request a date</a><a class="btn btn-line" href="#topics">See the talks</a></div>
+      <div class="sp-hero-copy">
+        <p class="n-kick">Speaking and training</p>
+        <h1>Your <span class="sp-who" id="sp-who">staff</span> heard it.<br><em>Now they’ll use it.</em></h1>
+        <p class="sp-lede">Bring Oluwaseyi Ashiru to your staff training programme, team retreat, school, company event, conference or faith gathering. Every session ends the same way: each person leaves with one step they can take that day.</p>
+        <div class="sp-actions"><a class="btn-alive" href="#book"><span class="ba-shine" aria-hidden="true"></span><span class="ba-text">Request a date</span><svg class="ba-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a><a class="btn btn-line" href="#topics">See the sessions</a></div>
       </div>
-      <div class="sp-photo"><img src="assets/img/portrait.webp" width="880" height="1232" alt="Oluwaseyi Ashiru"><span class="sp-badge">Teacher · Builder · Priest</span></div>
+      <div class="sp-stage" id="sp-stage" aria-hidden="true">
+        <svg class="sp-orbit" viewBox="0 0 400 400"><circle cx="200" cy="200" r="186"/><circle cx="200" cy="200" r="150"/></svg>
+        <div class="sp-photo"><img src="assets/img/portrait.webp" width="880" height="1232" alt=""></div>
+        <span class="sp-chip c1">Keynote</span><span class="sp-chip c2">Workshop</span><span class="sp-chip c3">Masterclass</span><span class="sp-chip c4">Staff training</span><span class="sp-chip c5">One step each</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sp-room" aria-labelledby="room-title">
+    <div class="wrap sp-room-grid">
+      <div>
+        <h2 id="room-title">Every seat leaves with a step.</h2>
+        <p class="sp-lede">Most talks end with applause and notes nobody opens again. These end with each person writing the one thing they will do, and doing the first part before they go home.</p>
+        <p class="sp-count"><b id="sp-n">0</b> of <span id="sp-total">120</span> people with a step</p>
+      </div>
+      <div class="sp-seats" id="sp-seats" aria-hidden="true"></div>
     </div>
   </section>
 
   <section class="sp-topics" id="topics" aria-labelledby="topics-title">
     <div class="wrap">
-      <h2 id="topics-title">Talks and workshops</h2>
+      <h2 id="topics-title">Sessions</h2>
+      <p class="sp-hint">Tap a session to see what people leave with.</p>
       <div class="sp-grid">
-        <article class="sp-card"><span class="sp-n">01</span><h3>From hearing to doing</h3><p>The signature keynote on making knowledge usable: why people learn so much and apply so little, and the USE method that closes the gap.</p><p class="sp-for">Conferences · leadership teams · general audiences</p></article>
-        <article class="sp-card"><span class="sp-n">02</span><h3>From sermon to steps</h3><p>For churches and ministries: how to turn what is preached into what is practised by Monday, so the word is lived, not only heard.</p><p class="sp-for">Churches · retreats · youth and workers’ meetings</p></article>
-        <article class="sp-card"><span class="sp-n">03</span><h3>AI made usable</h3><p>Plain-language, hands-on: how to get answers you can act on from AI tools, and how to check them before you trust them.</p><p class="sp-for">Schools · teams · small businesses</p></article>
-        <article class="sp-card"><span class="sp-n">04</span><h3>From learning to earning</h3><p>Turning courses, skills and remote-work knowledge into a first client, a first interview, or a first sale.</p><p class="sp-for">Universities · youth programmes · career events</p></article>
+        <button class="sp-card" type="button"><span class="sp-face"><span class="sp-n">Signature</span><b>From hearing to doing</b><span class="sp-d">Why people learn so much and apply so little, and the USE method that closes the gap.</span><span class="sp-for">Staff training · conferences · leadership teams</span></span><span class="sp-back"><span class="sp-n">They leave with</span><b>One action, written with a day and a time, and the first part done in the room.</b></span></button>
+        <button class="sp-card" type="button"><span class="sp-face"><span class="sp-n">For teams</span><b>AI made usable</b><span class="sp-d">Hands-on and plain: how to get answers you can act on from AI tools, and how to check them before you trust them.</span><span class="sp-for">Companies · schools · small businesses</span></span><span class="sp-back"><span class="sp-n">They leave with</span><b>A prompt they’ve tested on their own work, and a way to check the answer.</b></span></button>
+        <button class="sp-card" type="button"><span class="sp-face"><span class="sp-n">For schools and youth</span><b>From learning to earning</b><span class="sp-d">Turning courses, skills and remote-work knowledge into a first client, a first interview or a first sale.</span><span class="sp-for">Universities · youth programmes · career events</span></span><span class="sp-back"><span class="sp-n">They leave with</span><b>A one-line offer or CV headline, sent to one real person before the session ends.</b></span></button>
+        <button class="sp-card" type="button"><span class="sp-face"><span class="sp-n">For faith gatherings</span><b>From sermon to steps</b><span class="sp-d">How to turn what is taught into what is practised by Monday, so the word is lived and not only heard.</span><span class="sp-for">Retreats · conferences · workers’ meetings</span></span><span class="sp-back"><span class="sp-n">They leave with</span><b>One practice for the week, a time to do it, and someone to tell when it’s done.</b></span></button>
       </div>
-      <ul class="sp-formats" aria-label="Formats"><li>Keynote · 30 to 60 min</li><li>Workshop · 2 to 3 hours</li><li>Masterclass · half or full day</li><li>Panel or fireside chat</li><li>In person or online</li></ul>
     </div>
   </section>
 
-  <section class="sp-how" aria-labelledby="how-title">
+  <section class="sp-flow" aria-labelledby="flow-title">
     <div class="wrap">
-      <h2 id="how-title">What every audience gets</h2>
-      <ol class="sp-steps">
-        <li><b>A talk built around your theme</b><span>Prepared from your brief, your audience and your goals.</span></li>
-        <li><b>One step per person, the same day</b><span>Everyone leaves with something to do, not just notes.</span></li>
-        <li><b>A follow-up after the event</b><span>Optional USE Packs for attendees, so the learning lasts past the day.</span></li>
+      <h2 id="flow-title">How a session runs</h2>
+      <ol class="sp-steps" id="sp-steps">
+        <li><span class="sp-dot"></span><b>Before</b><span>A short call on your audience and goals. The session is built from your brief, not a stock talk.</span></li>
+        <li><span class="sp-dot"></span><b>On the day</b><span>Teaching, then the USE method live: everyone turns one idea into one step, in the room.</span></li>
+        <li><span class="sp-dot"></span><b>After</b><span>Optional USE Packs for attendees, so the learning keeps working after the day.</span></li>
       </ol>
+      <ul class="sp-formats" aria-label="Formats"><li>Keynote · 30 to 60 min</li><li>Workshop · 2 to 3 hours</li><li>Masterclass · half or full day</li><li>Staff training programme</li><li>Panel or fireside chat</li><li>In person or online</li></ul>
     </div>
   </section>
 
   <section class="sp-book" id="book" aria-labelledby="book-title">
     <div class="wrap sp-book-grid">
-      <div>
+      <div class="sp-book-side">
         <h2 id="book-title">Request a date</h2>
         <p class="sp-lede">Tell us about your event. You’ll hear back within two working days with availability and next steps.</p>
-        <p class="sp-direct">Prefer to talk? <a href="https://wa.me/2347033134979" target="_blank" rel="noopener">WhatsApp +234 703 313 4979</a><br>or email <a href="mailto:info@oluwaseyiashiru.com">info@oluwaseyiashiru.com</a></p>
+        <div class="ticket" aria-live="polite">
+          <p class="t-k">Your request</p>
+          <p class="t-title" id="t-event">Your event</p>
+          <dl>
+            <div><dt>Who</dt><dd id="t-org">Your organisation</dd></div>
+            <div><dt>When</dt><dd id="t-date">Date to confirm</dd></div>
+            <div><dt>Where</dt><dd id="t-where">In person</dd></div>
+            <div><dt>Session</dt><dd id="t-topic">From hearing to doing</dd></div>
+            <div><dt>Audience</dt><dd id="t-size">Under 50</dd></div>
+          </dl>
+          <span class="t-stamp">Making Knowledge Usable</span>
+        </div>
+        <p class="sp-direct">Prefer to talk? WhatsApp <b>+234 703 313 4979</b><br>or email <b>info@oluwaseyiashiru.com</b></p>
       </div>
       <form class="sp-form" id="sp-form" novalidate>
-        <div class="sp-row"><label>Your name<input name="name" required autocomplete="name"></label><label>Organisation<input name="org" required></label></div>
-        <div class="sp-row"><label>Email<input name="email" type="email" required autocomplete="email"></label><label>Phone or WhatsApp<input name="phone" type="tel" autocomplete="tel"></label></div>
-        <div class="sp-row"><label>Event name<input name="event"></label><label>Date (or month)<input name="date" placeholder="e.g. 14 March 2027"></label></div>
-        <div class="sp-row"><label>Where<select name="where"><option>In person</option><option>Online</option><option>Not decided yet</option></select></label><label>City / venue<input name="city" placeholder="Abuja, Lagos, online…"></label></div>
-        <div class="sp-row"><label>Audience size<select name="size"><option>Under 50</option><option>50 to 200</option><option>200 to 1,000</option><option>Over 1,000</option></select></label><label>Talk<select name="topic"><option>From hearing to doing</option><option>From sermon to steps</option><option>AI made usable</option><option>From learning to earning</option><option>Something custom</option></select></label></div>
-        <label>Format<select name="format"><option>Keynote</option><option>Workshop</option><option>Masterclass</option><option>Panel or fireside chat</option></select></label>
-        <label>Tell us about your audience and what you want them to leave with<textarea name="brief" rows="4"></textarea></label>
+        <div class="sp-row"><label>Your name<input id="f-name" name="name" required autocomplete="name"></label><label>Organisation<input id="f-org" name="org" required></label></div>
+        <div class="sp-row"><label>Email<input id="f-email" name="email" type="email" required autocomplete="email"></label><label>Phone or WhatsApp<input id="f-phone" name="phone" type="tel" autocomplete="tel"></label></div>
+        <div class="sp-row"><label>Event name<input id="f-event" name="event" placeholder="e.g. Leadership retreat 2027"></label><label>Date (or month)<input id="f-date" name="date" placeholder="e.g. 14 March 2027"></label></div>
+        <div class="sp-row"><label>Where<select id="f-where" name="where"><option>In person</option><option>Online</option><option>Not decided yet</option></select></label><label>City / venue<input id="f-city" name="city" placeholder="Abuja, Lagos, online…"></label></div>
+        <div class="sp-row"><label>Audience size<select id="f-size" name="size"><option>Under 50</option><option>50 to 200</option><option>200 to 1,000</option><option>Over 1,000</option></select></label><label>Session<select id="f-topic" name="topic"><option>From hearing to doing</option><option>AI made usable</option><option>From learning to earning</option><option>From sermon to steps</option><option>Staff training programme</option><option>Something custom</option></select></label></div>
+        <label>Format<select id="f-format" name="format"><option>Keynote</option><option>Workshop</option><option>Masterclass</option><option>Staff training programme</option><option>Panel or fireside chat</option></select></label>
+        <label>Tell us about your audience and what you want them to leave with<textarea id="f-brief" name="brief" rows="4"></textarea></label>
         <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
         <button class="btn btn-gold" type="submit">Send request</button>
         <p class="sp-msg" id="sp-msg" role="status"></p>
@@ -107,8 +135,8 @@
   </div>
 </footer>
 
-<script src="assets/js/config.js?v=20261026d"></script>
-<script src="assets/js/core.js?v=20261026d"></script>
-<script src="assets/js/speak.js?v=20261026d"></script>
+<script src="assets/js/config.js?v=20261026e"></script>
+<script src="assets/js/core.js?v=20261026e"></script>
+<script src="assets/js/speak.js?v=20261026e"></script>
 </body>
 </html>
