@@ -679,7 +679,11 @@
   (function () {
     var box = document.getElementById('settle'); if (!box || reduce || !box.animate) return;
     var words = ['How-to video', 'Tutorial', 'Training video', 'Seminar', 'Interview', 'Live lesson', 'AI answer', 'Informative post', 'Sermon excerpt', 'Webinar', 'Podcast', 'Workshop', 'YouTube', 'TikTok', 'Course', 'Article'];
-    var R = box.getBoundingClientRect(), cx = R.width / 2, cy = Math.min(R.height, 520) * 0.18;
+    var sp = document.querySelector('.still-point'), spr = sp.getBoundingClientRect();
+    var mid = (document.documentElement.clientHeight || innerHeight) / 2, drop = mid - (spr.top + spr.height / 2);
+    sp.style.setProperty('--drop', drop.toFixed(0) + 'px');
+    box.style.height = Math.max(560, mid * 2) + 'px';
+    var R = box.getBoundingClientRect(), cx = R.width / 2, cy = mid - R.top - 160;
     words.forEach(function (w, i) {
       var s = el('span', 'frag', w); box.appendChild(s);
       var a = Math.random() * Math.PI * 2, d = 160 + Math.random() * Math.max(220, R.width * 0.42);
@@ -687,7 +691,7 @@
       s.animate([
         { transform: 'translate(' + x0 + 'px,' + y0 + 'px) translate(-50%,-50%) rotate(' + (Math.random() * 30 - 15) + 'deg)', opacity: 0 },
         { transform: 'translate(' + x1 + 'px,' + y1 + 'px) translate(-50%,-50%) rotate(' + (Math.random() * 20 - 10) + 'deg)', opacity: .9, offset: .35 },
-        { transform: 'translate(' + cx + 'px,' + (cy + 40) + 'px) translate(-50%,-50%) scale(.2)', opacity: 0 }
+        { transform: 'translate(' + cx + 'px,' + (cy + 160) + 'px) translate(-50%,-50%) scale(.2)', opacity: 0 }
       ], { duration: 2000 + i * 40, delay: i * 25, easing: 'cubic-bezier(.3,.1,.2,1)', fill: 'forwards' }).onfinish = function () { s.remove(); };
     });
   })();

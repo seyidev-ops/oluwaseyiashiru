@@ -308,3 +308,15 @@
 .q-sub a { color: var(--gold-ink); font-weight: 600; }
 .ul-mail { margin: 8px 0 0; font-size: .82rem; color: var(--muted); }
 .locked-inner { max-height: 1100px; }
+
+/* ===== The opening fits one screen: the still point gathers in the middle, then rises and the words settle under it ===== */
+.wizard:has(.intro:not([hidden])) { padding-block: 0; }
+.intro { min-height: calc(100svh - 104px - 76px); justify-content: center; padding-block: clamp(10px, 3vh, 34px); }
+.still-point { --drop: 0px; width: clamp(54px, 9vh, 84px); height: clamp(54px, 9vh, 84px); margin-bottom: clamp(10px, 2.6vh, 24px); animation: still-gather 1.9s cubic-bezier(.6, .05, .25, 1) 1.1s both; }
+@keyframes still-gather { 0% { opacity: 0; transform: translateY(var(--drop)) scale(.2); } 45% { opacity: 1; transform: translateY(var(--drop)) scale(1.7); } 70% { transform: translateY(var(--drop)) scale(1.4); } 100% { opacity: 1; transform: none; } }
+.intro-kick { margin-bottom: clamp(4px, 1vh, 10px); animation-delay: 2.7s; }
+.intro-title { font-size: clamp(2.1rem, min(7vw, 6.6vh), 4.4rem); animation-delay: 2.8s; }
+.intro-lede { font-size: clamp(.98rem, min(2.4vw, 2.3vh), 1.2rem); margin: clamp(8px, 1.8vh, 18px) auto clamp(14px, 3vh, 30px); animation-delay: 2.95s; }
+.intro .btn-alive { min-height: clamp(52px, 7vh, 62px); animation-delay: 3.1s; }
+.intro-note { margin-top: clamp(8px, 1.6vh, 16px); animation-delay: 3.25s; }
+@media (max-width: 760px) { .intro { min-height: calc(100svh - 84px - 66px); } .intro .btn-alive { animation: rise .8s var(--ease) 3.1s both, breathe 4.5s ease-in-out 4.2s infinite; } }
