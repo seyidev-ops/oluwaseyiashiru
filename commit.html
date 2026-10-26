@@ -13,8 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=20261025k">
-<link rel="stylesheet" href="assets/css/commit.css?v=20261025k">
+<link rel="stylesheet" href="assets/css/site.css?v=20261026a">
+<link rel="stylesheet" href="assets/css/commit.css?v=20261026a">
+<link rel="stylesheet" href="assets/css/commit2.css?v=20261026a">
 </head>
 <body class="inner">
 <canvas class="threads" aria-hidden="true"></canvas>
@@ -30,6 +31,7 @@
         <li><a href="start.html"><span class="ns-n">02</span><span class="ns-t">Start</span><span class="ns-d">Make what you know usable</span></a></li>
         <li><a href="commit.html" aria-current="page"><span class="ns-n">03</span><span class="ns-t">Next level</span><span class="ns-d">The $1 commitment and beyond</span></a></li>
         <li><a href="about.html"><span class="ns-n">04</span><span class="ns-t">About</span><span class="ns-d">Who I am and how it works</span></a></li>
+        <li><a href="speak.html"><span class="ns-n">05</span><span class="ns-t">Speaking</span><span class="ns-d">Invite Oluwaseyi to your event</span></a></li>
       </ol>
       <p class="ns-quote">“What you put to work, works for you.” <span>— Oluwaseyi Ashiru</span></p>
     </nav>
@@ -39,9 +41,10 @@
 
 <main class="inner-main">
   <div class="wrap">
-    <section class="c-hero" aria-labelledby="c-title">
-      <h1 id="c-title">Ready to go further?</h1>
-      <p class="c-lede">The first step was free and yours alone. The next level takes a commitment, because people who commit are the people who finish.</p>
+    <section class="n-hero" aria-labelledby="n-title">
+      <p class="n-kick">The next level</p>
+      <h1 id="n-title">Your first step was free.<br><em>The rest is one decision away.</em></h1>
+      <p class="n-lede">Pick how far you want to go. Every level is built from what you bring, never from a template.</p>
     </section>
 
     <section class="c-plan" id="c-plan" aria-label="Your plan">
@@ -52,24 +55,45 @@
         <p class="plan-status" id="plan-status"></p>
       </div>
       <div class="plan-empty" id="plan-empty">
-        <p>You haven't made your first plan yet. It takes about two minutes.</p>
-        <a class="btn btn-solid" href="start.html">Get my first step</a>
+        <p>You haven’t made your first step yet. It takes about two minutes.</p>
+        <a class="btn btn-solid" href="start.html">Find my one thing</a>
       </div>
     </section>
 
-    <section class="c-ladder" aria-labelledby="ladder-title">
-      <h2 id="ladder-title">Where you are</h2>
-      <ol class="stairs" id="stairs">
-        <li data-rung="1"><span class="r-n">1</span><h3>Your first step</h3><p>Free. One clear win you can see.</p></li>
-        <li data-rung="2"><span class="r-n">2</span><h3>The $1 commitment</h3><p>The moment you decide. The next steps, walked through with you.</p></li>
-        <li data-rung="3"><span class="r-n">3</span><h3>Deeper systems</h3><p>Fuller programmes for people who do the work.</p></li>
-        <li data-rung="4"><span class="r-n">4</span><h3>The Inner Circle</h3><p>Fellowship and accountability on the same path.</p></li>
+    <section class="n-tiers" aria-labelledby="tiers-title">
+      <h2 id="tiers-title" class="visually-hidden">Levels</h2>
+      <ol class="offer" id="stairs">
+        <li class="o-card o1" data-rung="1">
+          <p class="o-tag">Level 1</p><h3>Your first step</h3>
+          <p class="o-price">Free</p>
+          <ul class="o-list"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>One link, upload or story in</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>One step made from it, with how-to</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Shown on the page</span></li></ul>
+          <a class="btn btn-line o-cta" href="start.html">Start free</a>
+        </li>
+        <li class="o-card o2" data-rung="2">
+          <p class="o-tag">Level 2 · most chosen</p><h3>Your full USE Pack</h3>
+          <p class="o-price">$1 <small>one time, per pack</small></p>
+          <ul class="o-list"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>The full action plan, step by step</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Is it true? Every key claim checked</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Seven-day tracker and “if you get stuck” fixes</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Saved on your device, PDF download, copy to your email</span></li></ul>
+          <a class="btn btn-solid o-cta" href="#commit">Unlock for $1</a>
+        </li>
+        <li class="o-card o3" data-rung="3">
+          <p class="o-tag">Level 3</p><h3>Deeper Systems</h3>
+          <p class="o-price">$5 <small>per month</small></p>
+          <ul class="o-list"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>10 full packs every month</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Links and uploads, up to 25 MB each</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>All your packs kept in one place</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>A weekly nudge on WhatsApp or email</span></li></ul>
+          <a class="btn btn-gold o-cta" href="#commit" data-plan="monthly">Go monthly</a>
+        </li>
+        <li class="o-card o4" data-rung="4">
+          <p class="o-tag">Level 4</p><h3>The Inner Circle</h3>
+          <p class="o-price">By invitation</p>
+          <ul class="o-list"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>A closed fellowship of doers</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Small accountability circles</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Live sessions with Oluwaseyi</span></li></ul>
+          <a class="btn btn-line o-cta o-cta-light" href="https://wa.me/2347033134979?text=I%E2%80%99d%20like%20to%20be%20considered%20for%20the%20Inner%20Circle." target="_blank" rel="noopener">Ask to be considered</a>
+        </li>
       </ol>
     </section>
 
-    <section class="c-commit" aria-labelledby="commit-title">
-      <h2 id="commit-title">Make the commitment</h2>
-      <p class="c-lede">Press and hold the icon until the ring closes. Holding on is the whole point.</p>
+    <section class="c-commit" id="commit" aria-labelledby="commit-title">
+      <p class="n-kick">Make the commitment</p>
+      <h2 id="commit-title">Hold on to unlock your full pack.</h2>
+      <p class="c-lede">Press and hold the icon until the ring closes. Holding on is the whole point: people who commit are the people who finish.</p>
       <button class="hold" id="hold" type="button" aria-describedby="hold-help">
         <svg class="hold-ring" viewBox="0 0 200 200" aria-hidden="true"><circle class="h-track" cx="100" cy="100" r="92"/><circle class="h-fill" id="h-fill" cx="100" cy="100" r="92"/></svg>
         <span class="hold-face"><img src="assets/img/icon-photo.webp" width="960" height="965" alt=""></span>
@@ -79,14 +103,26 @@
 
       <div class="committed" id="committed" hidden>
         <p class="committed-title" tabindex="-1" id="committed-title">Committed.</p>
-        <p>Send your plan, and I'll reply with how to make the $1 step and what comes next.</p>
+        <p>One last tap and your full pack opens.</p>
         <div class="send-row">
-          <a class="btn btn-gold" id="wa" href="https://wa.me/2347033134979" target="_blank" rel="noopener">Send on WhatsApp</a>
-          <button class="btn btn-line" type="button" id="copy-plan">Copy my plan</button>
+          <a class="btn btn-gold pay-btn" id="pay" href="#" data-amount="1">Pay $1 securely</a>
         </div>
-        <p class="send-alt">Or send it yourself: <span class="sel">+2347033134979</span> · <span class="sel">info@oluwaseyiashiru.com</span></p>
+        <ol class="unlock-steps">
+          <li><b>Pay $1</b> with your card or bank transfer (Paystack).</li>
+          <li><b>Your full pack opens</b> on the page and stays saved on this device.</li>
+          <li><b>Download the PDF</b>, and a copy lands in your email.</li>
+        </ol>
+        <p class="send-alt">Prefer to talk first? <a id="wa" href="https://wa.me/2347033134979" target="_blank" rel="noopener">Message on WhatsApp</a> <button class="linkish" type="button" id="copy-plan">or copy your plan</button></p>
         <p class="copy-msg" id="copy-msg" role="status"></p>
       </div>
+    </section>
+
+    <section class="n-faq" aria-labelledby="faq-title">
+      <h2 id="faq-title">Good questions</h2>
+      <details><summary>Why $1?</summary><p>It is small on purpose. It is not the money, it is the decision. People who commit, even a little, are the ones who finish.</p></details>
+      <details><summary>What do I keep after paying?</summary><p>The full pack stays on your device, you can download it as a PDF, and a copy is emailed to you.</p></details>
+      <details><summary>What does monthly give me?</summary><p>Ten full packs a month from your own links and uploads, all kept in one place, and a weekly nudge to keep going. Cancel any time.</p></details>
+      <details><summary>How do I join the Inner Circle?</summary><p>It is by invitation. People who complete packs and show their proof are invited first. You can ask to be considered.</p></details>
     </section>
   </div>
 </main>
@@ -99,8 +135,8 @@
   </div>
 </footer>
 
-<script src="assets/js/config.js?v=20261025k"></script>
-<script src="assets/js/core.js?v=20261025k"></script>
-<script src="assets/js/commit.js?v=20261025k"></script>
+<script src="assets/js/config.js?v=20261026a"></script>
+<script src="assets/js/core.js?v=20261026a"></script>
+<script src="assets/js/commit.js?v=20261026a"></script>
 </body>
 </html>

@@ -468,15 +468,15 @@
       clearInterval(timer); engine.classList.remove('working');
       if (!out.ok) { var er = new Error(out.error || 'failed'); er.code = out.code; er.detail = out.detail; throw er; }
       engine.classList.add('done');
-      engineMsg.textContent = 'Your full USE Pack is below. A PDF copy is on its way to ' + answers.email + '.';
-      fromPack(out.pack); renderPack(out.pack);
+      engineMsg.textContent = out.locked ? 'Your one thing is above, and it’s in your email too. Your full pack is ready below.' : 'Your full USE Pack is below.';
+      fromPack(out.pack); renderPack(out.pack); if (out.locked) gate(out.pack);
       if (out.pdf) {
         var bytes = atob(out.pdf), arr = new Uint8Array(bytes.length);
         for (var k = 0; k < bytes.length; k++) arr[k] = bytes.charCodeAt(k);
         var a = document.getElementById('pdf-dl');
         a.href = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' })); a.download = out.pdfName || 'USE Pack.pdf'; a.hidden = false;
       }
-      save({ packId: out.id });
+      save({ packId: out.id, pack: out.pack, unlocked: !out.locked });
     }).catch(function (e) {
       clearInterval(timer); engine.classList.remove('working'); engine.classList.add('failed');
       if (e && e.detail) console.warn('Engine detail:', e.detail);
@@ -534,6 +534,57 @@
     if (!reduce && fullpack.animate) fullpack.animate([{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.2,.7,.2,1)' });
   }
 
+  /* Free shows the one thing; the rest of the pack stays with the engine until the $1 is confirmed */
+  function gate(p) {
+    var t = (p && p.teaser) || { plan: 3, checks: 3, tracker: 7, stuck: 3 };
+    var box = el('div', 'locked'), inner = el('div', 'locked-inner'), over = el('div', 'unlock');
+    function ghost(title, rows) {
+      inner.appendChild(el('h2', 'fp-h', title));
+      var tb = el('div', 'ghost-table'); for (var i = 0; i < rows; i++) { var r = el('div', 'ghost-row'); r.appendChild(el('span')); r.appendChild(el('span')); r.appendChild(el('span')); tb.appendChild(r); }
+      inner.appendChild(tb);
+    }
+    ghost('The action plan', t.plan || 3); ghost('Is it true?', t.checks || 2); ghost('Seven-day tracker', 4); ghost('If you get stuck', t.stuck || 3);
+    over.innerHTML = '<span class="ul-ring" aria-hidden="true"></span><p class="ul-k">Your full USE Pack is ready</p><h3>Unlock the whole plan for $1</h3>' +
+      '<ul><li>Every step after this one, tied to what you shared</li><li>Truth check on each key claim</li><li>Seven-day tracker and “if you get stuck” fixes</li><li>Saved on your device, PDF download, copy to your email</li></ul>' +
+      '<a class="btn btn-gold" href="commit.html#commit">Commit $1 to unlock</a>';
+    box.appendChild(inner); box.appendChild(over);
+    var sign = fullpack.querySelector('.fp-sign'); if (sign) fullpack.insertBefore(box, sign); else fullpack.appendChild(box);
+    var dup = fullpack.querySelector('.fp-first'); if (dup) dup.remove();
+    document.getElementById('pdf-dl').hidden = true;
+    var ol = document.getElementById('u-steps'); ol.innerHTML = '';
+    ['Your next step, built on the same source', 'The step after that', 'How you’ll know it worked'].forEach(function (x) { var li = el('li'), d = el('div'); d.appendChild(el('strong', null, x)); d.appendChild(el('span', null, 'Unlocks with your full pack.')); li.appendChild(d); ol.appendChild(li); });
+    ol.classList.add('blur-lite');
+    var note = document.getElementById('u-note'); if (!note.textContent) note.textContent = 'The rest of your plan is in your full pack.';
+  }
+  function showFull(out) {
+    fromPack(out.pack); renderPack(out.pack);
+    document.getElementById('u-steps').classList.remove('blur-lite');
+    if (out.pdf) {
+      var bytes = atob(out.pdf), arr = new Uint8Array(bytes.length);
+      for (var k = 0; k < bytes.length; k++) arr[k] = bytes.charCodeAt(k);
+      var a = document.getElementById('pdf-dl');
+      a.href = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' })); a.download = out.pdfName || 'USE Pack.pdf'; a.hidden = false;
+    }
+  }
+
+  /* Back from the $1 checkout: confirm the payment with the engine, then open the full pack */
+  (function () {
+    var q = new URLSearchParams(location.search), ref = q.get('reference') || q.get('trxref');
+    if (!ref || !ENDPOINT) return;
+    var saved = load() || {}, id = q.get('id') || saved.packId;
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    if (!id) return;
+    answers = saved.answers || answers;
+    wizard.hidden = true; result.hidden = false; card.hidden = true; document.getElementById('after').hidden = true;
+    engine.hidden = false; engine.classList.remove('done', 'failed'); engine.classList.add('working'); engineMsg.textContent = 'Confirming your payment…';
+    fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ action: 'unlock', id: id, reference: ref }) }).then(function (r) { return r.json(); }).then(function (out) {
+      engine.classList.remove('working');
+      if (!out.ok) { engine.classList.add('failed'); engineMsg.textContent = out.error; return; }
+      engine.classList.add('done'); engineMsg.textContent = 'Unlocked. Your full USE Pack is below, and a copy is on its way to your email.';
+      showFull(out); save({ pack: out.pack, unlocked: true, packId: id });
+    }).catch(function () { engine.classList.remove('working'); engine.classList.add('failed'); engineMsg.textContent = 'We couldn’t reach the engine. Refresh this page to try again; your payment is safe.'; });
+  })();
+
   /* Copy, restart */
   document.getElementById('copy').addEventListener('click', function () {
     var msg = document.getElementById('copy-msg');
@@ -573,7 +624,11 @@
   var saved = load();
   if (saved && saved.answers && saved.answers.time) {
     var rs = document.getElementById('resume'); rs.hidden = false;
-    document.getElementById('resume-btn').addEventListener('click', function () { answers = saved.answers; build(false); });
+    document.getElementById('resume-btn').addEventListener('click', function () {
+      answers = saved.answers;
+      if (saved.pack) { wizard.hidden = true; result.hidden = false; engine.hidden = false; engine.classList.add('done'); engineMsg.textContent = saved.unlocked ? 'Your full USE Pack, saved on this device.' : 'Your one thing, saved on this device.'; fromPack(saved.pack); renderPack(saved.pack); if (!saved.unlocked) gate(saved.pack); }
+      else build(false);
+    });
   }
 
   /* The opening line flips away into the first question */

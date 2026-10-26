@@ -36,8 +36,10 @@
     inner: function () { return core.offsetWidth * (wide() ? 0.66 : 0.46); },
     clear: function () { return wide() ? 0 : core.offsetWidth * 0.44; },
     guard: function () { return wide() ? ringBox() : 0; },
-    speedMul: function () { return hovering ? 0.3 : 1; }
+    speedMul: function () { return hovering ? 0.3 : 1; },
+    order: function () { return window.OA_ORDER || 0; }
   });
+  window.OA_FIELD = field;
 
   /* The portrait leans toward you, and the noise calms as you reach it */
   core.addEventListener('pointerenter', function () { hovering = true; });

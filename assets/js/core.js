@@ -254,6 +254,12 @@
       f.bx = r() * W; f.by = r() * H;
       f.sx = (r() - 0.5) * 14; f.sy = (r() - 0.5) * 10;
     });
+    /* an ordered resting place for every label: neat centred rows, like a well-kept shelf */
+    var gap = W < 700 ? 8 : 14, rowH = (this.frags[0] ? this.frags[0].h : 30) + gap, rows = [], row = [], rw = 0, maxW = W - 32;
+    this.frags.forEach(function (f) { if (rw + f.w > maxW && row.length) { rows.push([row, rw - gap]); row = []; rw = 0; } row.push(f); rw += f.w + gap; });
+    if (row.length) rows.push([row, rw - gap]);
+    var top = Math.max(16, (H - rows.length * rowH) / 2);
+    rows.forEach(function (rr, ri) { var x = (W - rr[1]) / 2; rr[0].forEach(function (f) { f.gx = x; f.gy = top + ri * rowH; x += f.w + gap; }); });
   };
   Field.prototype.kick = function (f, power) {
     var B = this.box(), px = pointer.x - B.x, py = pointer.y - B.y;
@@ -304,8 +310,13 @@
         bx = bx + (center.x - f.w / 2 - bx) * e; by = by + (center.y - f.h / 2 - by) * e;
         f.alpha = 1 - e;
       }
+      var ord = self.o.order ? self.o.order() : 0;
+      if (ord > 0 && self.mode === 'orbit' && f.gx != null) {
+        var oe = ord * ord * (3 - 2 * ord);
+        bx += (f.gx - bx) * oe; by += (f.gy - by) * oe; f.dx *= 1 - oe; f.dy *= 1 - oe;
+      }
       f.x = bx + f.dx; f.y = by + f.dy;
-      if (guardR && self.mode === 'orbit') {
+      if (guardR && self.mode === 'orbit' && ord < 0.4) {
         /* a keep-out frame: labels slide around the icon and its words, never over them */
         for (var g = 0; g < 3; g++) {
           var gx = Math.max(f.x, Math.min(center.x, f.x + f.w)), gy = Math.max(f.y, Math.min(center.y, f.y + f.h));

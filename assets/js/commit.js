@@ -63,6 +63,7 @@
     committed.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
     try { var s = JSON.parse(localStorage.getItem('oa-plan') || '{}'); s.committed = true; localStorage.setItem('oa-plan', JSON.stringify(s)); } catch (e) {}
     rungs.forEach(function (li, i) { li.classList.toggle('here', i === 1); if (i === 0) li.classList.add('reached'); });
+    document.getElementById('pay').focus({ preventScroll: true });
     if (!reduce && hold.animate) hold.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'scale(1)' }], { duration: 600, easing: 'cubic-bezier(.2,.7,.2,1)' });
   }
   hold.addEventListener('pointerdown', function (e) { hold.setPointerCapture && hold.setPointerCapture(e.pointerId); press(e); });
@@ -95,4 +96,18 @@
     done = true; k = 1; draw(); hold.classList.add('complete'); committed.hidden = false;
     document.getElementById('hold-help').textContent = 'You already committed. Send your plan if you haven’t yet.';
   }
+})();
+
+/* Pay $1: Paystack checkout when connected, otherwise WhatsApp with the pack number */
+(function () {
+  var plan = null; try { plan = JSON.parse(localStorage.getItem('oa-plan') || 'null'); } catch (e) {}
+  var id = plan && plan.packId, pay = document.getElementById('pay'), L = (window.OA_PAY && window.OA_PAY.link) || '';
+  var wa = 'https://wa.me/2347033134979?text=' + encodeURIComponent('Hello Oluwaseyi, I want to unlock my full USE Pack for $1.' + (id ? ' My pack number is ' + id + '.' : ''));
+  pay.href = L || wa; if (!L) { pay.target = '_blank'; pay.rel = 'noopener'; pay.textContent = 'Unlock for $1 on WhatsApp'; }
+  pay.addEventListener('click', function (e) {
+    if (!L) return;
+    if (!id) { e.preventDefault(); document.getElementById('copy-msg').textContent = 'Make your first step on the Start page first, then come back to unlock it.'; return; }
+  });
+  var monthly = document.querySelector('[data-plan="monthly"]');
+  if (monthly) { monthly.href = 'https://wa.me/2347033134979?text=' + encodeURIComponent('Hello Oluwaseyi, I want Deeper Systems (10 packs a month).'); monthly.target = '_blank'; monthly.rel = 'noopener'; }
 })();

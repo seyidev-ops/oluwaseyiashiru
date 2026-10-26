@@ -17,7 +17,10 @@ var DEFAULTS = {
   MODEL: 'gemini-3.8-flash',
   OWNER_EMAIL: 'info@oluwaseyiashiru.com',
   DAILY_LIMIT_PER_EMAIL: '3',
-  MAX_UPLOAD_MB: '25'
+  MAX_UPLOAD_MB: '25',
+  SITE_URL: 'https://seyidev-ops.github.io/oluwaseyiashiru/',
+  PAY_MIN_NGN: '1000',
+  PAY_MIN_USD: '1'
 };
 
 var HEADERS = ['Received', 'Entry ID', 'Name', 'Email', 'WhatsApp', 'Holding', 'Life area', 'What they described',
@@ -67,6 +70,8 @@ function doPost(e) {
   try {
     var d = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (d.website) return json({ ok: true, ignored: true });               // honeypot: bots fill hidden fields
+    if (d.action === 'unlock') { stage = 'unlock'; return json(unlock(d)); }
+    if (d.action === 'booking') { stage = 'booking'; return json(booking(d)); }
     var err = validate(d); if (err) return json({ ok: false, error: err });
     if (overLimit(d.email)) return json({ ok: false, error: 'You have made several packs today. Please try again tomorrow, or send your link on WhatsApp.' });
 
@@ -79,9 +84,10 @@ function doPost(e) {
     }
     stage = 'thinking'; var pack = makePack(d, source);
     stage = 'pdf'; var pdf = makePdf(d, pack, id);
-    stage = 'email'; notifyVisitor(d, pack, pdf); notifyOwner(d, pack, pdf, upload, id);
+    stage = 'save'; savePack(id, d, pack, pdf);
+    stage = 'email'; notifyVisitor(d, pack, id); notifyOwner(d, pack, pdf, upload, id);
     stage = 'log'; logRow(d, pack, pdf, upload, source, id);
-    return json({ ok: true, id: id, pack: pack, pdf: Utilities.base64Encode(pdf.getBlob().getBytes()), pdfName: pdf.getName() });
+    return json({ ok: true, id: id, locked: true, pack: freePart(pack) });
   } catch (x) {
     console.error('Failed at ' + stage + ': ' + (x && x.stack || x));
     var m = String(x && x.message || x);
@@ -391,14 +397,82 @@ function makePdf(d, p, id) {
   return DriveApp.getFolderById(prop('PACKS_ID')).createFile(blob);
 }
 
-function notifyVisitor(d, p, pdf) {
+/* Free: the visitor gets their one thing by email, and the way to unlock the rest. */
+function notifyVisitor(d, p, id) {
+  var f = p.first_step || {}, link = prop('SITE_URL') + 'commit.html#commit';
   MailApp.sendEmail({
     to: d.email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'),
-    subject: 'Your USE Pack: ' + p.title,
-    htmlBody: '<p>Hello ' + esc(d.name) + ',</p><p>Here is your USE Pack. Start with your first step today: <b>' + esc(p.first_step && p.first_step.action) + '</b></p>' + packHtml(d, p, false) +
-      '<p>When you’ve done it, reply to this email or message +2347033134979 on WhatsApp. Now use it.</p>',
-    attachments: [pdf.getBlob()]
+    subject: 'Your one thing today: ' + p.title,
+    htmlBody: '<div style="font-family:Arial,sans-serif;color:#14213D;max-width:600px"><p>Hello ' + esc(d.name) + ',</p>' +
+      '<p>Here is your first step, made from what you shared.</p>' +
+      '<div style="background:#14213D;color:#F7F5F0;border-radius:12px;padding:16px 18px;margin:14px 0"><p style="font-family:Georgia,serif;color:#D4A24C;font-size:18px;margin:0 0 6px">Your one thing today</p>' +
+      (f.from_source ? '<p style="margin:0 0 6px;font-size:12px;color:#D4A24C">From what you shared: ' + esc(f.from_source) + '</p>' : '') +
+      '<p style="margin:0 0 8px;font-size:14px">' + esc(f.action) + '</p>' + (f.how && f.how.length ? '<ol style="margin:0 0 8px;padding-left:18px;font-size:13px">' + f.how.map(function (h) { return '<li>' + esc(h) + '</li>'; }).join('') + '</ol>' : '') +
+      '<p style="margin:0;font-size:12px;color:#C9CEDA">Time: ' + esc(f.time) + (f.done_when ? ' · Done when: ' + esc(f.done_when) : '') + '</p></div>' +
+      '<p>Your full USE Pack is ready too: every step after this one, a truth check, a 7-day tracker and fixes for when you get stuck. <a href="' + link + '" style="color:#B07F2A;font-weight:bold">Unlock it for $1</a>. Your pack number is <b>' + id + '</b>.</p>' +
+      '<p>Now use it.<br>Oluwaseyi Ashiru · Making Knowledge Usable</p></div>'
   });
+}
+
+/* What the free page may see. The rest stays in Drive until the $1 is confirmed. */
+function freePart(p) {
+  return { title: p.title, source: p.source, source_read: p.source_read, note_to_visitor: p.note_to_visitor, first_step: p.first_step,
+    teaser: { plan: (p.plan || []).length, checks: (p.checks || []).length, tracker: (p.tracker || []).length, stuck: (p.stuck || []).length } };
+}
+
+function savePack(id, d, p, pdf) {
+  var data = { id: id, created: new Date().toISOString(), email: d.email, name: d.name, pdfId: pdf.getId(), pack: p };
+  DriveApp.getFolderById(prop('PACKS_ID')).createFile(id + '.json', JSON.stringify(data), 'application/json');
+}
+function loadPack(id) {
+  if (!/^OA-[\w-]+$/.test(String(id || ''))) return null;
+  var it = DriveApp.getFolderById(prop('PACKS_ID')).getFilesByName(id + '.json');
+  return it.hasNext() ? JSON.parse(it.next().getBlob().getDataAsString()) : null;
+}
+
+/* $1 unlock: confirm the payment with Paystack, then release the full pack, the PDF and the email. */
+function unlock(d) {
+  var saved = loadPack(d.id);
+  if (!saved) return { ok: false, error: 'We couldn’t find that pack. Message +2347033134979 on WhatsApp with your pack number.' };
+  var props = PropertiesService.getScriptProperties(), ref = String(d.reference || '').trim();
+  var used = props.getProperty('REF_' + ref);
+  if (!ref) return { ok: false, error: 'No payment reference came back from the checkout.' };
+  if (used && used !== d.id) return { ok: false, error: 'That payment has already been used for another pack.' };
+  if (!used) {
+    var secret = prop('PAYSTACK_SECRET_KEY');
+    if (!secret) return { ok: false, error: 'Payments are not switched on yet. Message +2347033134979 on WhatsApp with your pack number ' + d.id + '.' };
+    var r = UrlFetchApp.fetch('https://api.paystack.co/transaction/verify/' + encodeURIComponent(ref), { muteHttpExceptions: true, headers: { Authorization: 'Bearer ' + secret } });
+    var v = JSON.parse(r.getContentText() || '{}'), t = v.data || {};
+    var min = t.currency === 'USD' ? Number(prop('PAY_MIN_USD')) * 100 : Number(prop('PAY_MIN_NGN')) * 100;
+    if (!v.status || t.status !== 'success') return { ok: false, error: 'We couldn’t confirm that payment yet. If you were charged, message +2347033134979 on WhatsApp with your pack number ' + d.id + '.' };
+    if (Number(t.amount) < min) return { ok: false, error: 'That payment was less than the unlock amount.' };
+    props.setProperty('REF_' + ref, d.id);
+    MailApp.sendEmail({ to: saved.email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'Your full USE Pack: ' + saved.pack.title,
+      htmlBody: '<p>Hello ' + esc(saved.name) + ',</p><p>Thank you for committing. Your full USE Pack is attached and below.</p>' + packHtml({ name: saved.name, link: '' }, saved.pack, false) + '<p>Now use it.</p>',
+      attachments: [DriveApp.getFileById(saved.pdfId).getBlob()] });
+    markRow(d.id, 'Paid $1', 'Unlocked · ' + ref);
+  }
+  var pdf = DriveApp.getFileById(saved.pdfId);
+  return { ok: true, id: d.id, pack: saved.pack, pdf: Utilities.base64Encode(pdf.getBlob().getBytes()), pdfName: pdf.getName() };
+}
+
+function markRow(id, stage, status) {
+  var sh = SpreadsheetApp.openById(prop('SHEET_ID')).getSheetByName('Entries'), last = sh.getLastRow(); if (last < 2) return;
+  var ids = sh.getRange(2, 2, last - 1, 1).getValues();
+  for (var i = ids.length - 1; i >= 0; i--) if (ids[i][0] === id) { sh.getRange(i + 2, 19, 1, 2).setValues([[stage, status]]); return; }
+}
+
+/* Speaking requests from speak.html: a row in "Bookings" and an email to the owner. */
+function booking(d) {
+  if (!d.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(d.email || ''))) return { ok: false, error: 'Add your name and a valid email.' };
+  var ss = SpreadsheetApp.openById(prop('SHEET_ID')), sh = ss.getSheetByName('Bookings');
+  var H = ['Received', 'Name', 'Organisation', 'Email', 'Phone', 'Event', 'Date', 'Where', 'City / venue', 'Audience', 'Talk', 'Format', 'Brief', 'Status'];
+  if (!sh) { sh = ss.insertSheet('Bookings'); sh.getRange(1, 1, 1, H.length).setValues([H]).setFontWeight('bold').setBackground('#14213D').setFontColor('#F7F5F0'); sh.setFrozenRows(1); }
+  var row = [new Date(), d.name, d.org, d.email, d.phone, d.event, d.date, d.where, d.city, d.size, d.topic, d.format, d.brief, 'New'];
+  sh.appendRow(row);
+  MailApp.sendEmail({ to: prop('OWNER_EMAIL'), replyTo: d.email, subject: 'Speaking request: ' + (d.org || d.name) + (d.date ? ' · ' + d.date : ''),
+    htmlBody: '<table style="font-family:Arial,sans-serif;font-size:13px">' + H.slice(1, 13).map(function (h, i) { return '<tr><td style="padding:4px 10px;color:#5A6275">' + h + '</td><td style="padding:4px 10px">' + esc(row[i + 1]) + '</td></tr>'; }).join('') + '</table>' });
+  return { ok: true };
 }
 
 function notifyOwner(d, p, pdf, upload, id) {
@@ -420,7 +494,7 @@ function logRow(d, p, pdf, upload, source, id) {
     SpreadsheetApp.openById(prop('SHEET_ID')).getSheetByName('Entries').appendRow([
       new Date(), id, d.name, d.email, d.whatsapp || '', LABELS.type[d.type] || d.type, d.fieldLabel || d.field, d.what, d.want || '',
       LABELS.block[d.block] || d.block, d.time + ' min', d.link || '', upload ? upload.file.getUrl() : '', p.source_read ? 'Yes (' + source.kind + ')' : 'No (' + source.kind + ')',
-      pdf.getUrl(), o.readiness || '', o.challenge || '', o.next_action || '', 'Free', 'Pack sent'
+      pdf.getUrl(), o.readiness || '', o.challenge || '', o.next_action || '', 'Free', 'First step sent'
     ]);
   } finally { lock.releaseLock(); }
 }

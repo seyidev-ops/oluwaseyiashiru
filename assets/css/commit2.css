@@ -1,0 +1,43 @@
+/* Next level, redesigned: the offer, the hold, the questions */
+.n-hero { padding-block: 40px 30px; max-width: 820px; }
+.n-kick { margin: 0 0 12px; font: 600 .78rem var(--body); letter-spacing: .18em; text-transform: uppercase; color: var(--gold-ink); }
+.n-hero h1 { font-size: clamp(2.4rem, 6.4vw, 4.6rem); line-height: 1.04; letter-spacing: -0.02em; }
+.n-hero h1 em { font-style: italic; color: var(--gold-ink); }
+.n-lede { font-size: 1.15rem; color: var(--muted); max-width: 46ch; margin-top: 18px; }
+.n-tiers { margin-top: 30px; }
+.offer { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
+.o-card { position: relative; display: flex; flex-direction: column; border-radius: 24px; padding: 26px 22px 22px; transition: transform .4s var(--ease), box-shadow .4s; animation: grow .8s var(--ease) both; }
+.o-card:nth-child(2) { animation-delay: .1s; } .o-card:nth-child(3) { animation-delay: .2s; } .o-card:nth-child(4) { animation-delay: .3s; }
+.o-card:hover { transform: translateY(-8px); }
+.o-tag { margin: 0 0 6px; font: 600 .72rem var(--body); letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+.o-card h3 { font-size: 1.45rem; margin: 0 0 14px; }
+.o-price { font-family: var(--display); font-size: 2.4rem; line-height: 1; margin: 0 0 18px; }
+.o-price small { display: block; font: 500 .8rem var(--body); margin-top: 6px; opacity: .8; }
+.o-list { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 10px; flex: 1; align-content: start; }
+.o-list li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; font-size: .93rem; line-height: 1.4; }
+.o-list svg { width: 18px; height: 18px; margin-top: 1px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+.o-cta { width: 100%; }
+.o1 { background: var(--surface); box-shadow: inset 0 0 0 1px var(--rule); border-top: 4px solid #5A6275; } .o1 .o-list svg { stroke: #5A6275; }
+.o2 { background: #D4A24C; color: #14213D; transform: translateY(-14px); box-shadow: 0 30px 60px -30px rgba(212, 162, 76, .9); }
+.o2:hover { transform: translateY(-22px); }
+.o2 .btn-solid { background: #14213D; color: #F7F5F0; }
+.o3 { background: #5A6275; color: #F7F5F0; } .o3 .btn-gold { color: #14213D; }
+.o4 { background: radial-gradient(120% 80% at 50% 0%, #2A3D66 0%, #14213D 60%); color: #F7F5F0; box-shadow: 0 0 0 2px #D4A24C, 0 24px 50px -24px rgba(212, 162, 76, .7); }
+.o4 h3, .o4 .o-price { color: #F2C77A; }
+.o-cta-light { border-color: #F7F5F0; color: #F7F5F0; } .o-cta-light:hover { background: #F7F5F0; color: #14213D; }
+.o-card.here::after { content: "You are here"; position: absolute; top: -14px; right: 18px; font: 600 .74rem var(--body); color: #14213D; background: #F7F5F0; box-shadow: 0 0 0 1.5px #D4A24C; padding: 5px 11px; border-radius: 999px; animation: bob 2.4s ease-in-out infinite; }
+.c-commit h2 { font-size: clamp(2rem, 4.6vw, 3.2rem); }
+.pay-btn { min-width: 240px; min-height: 58px; font-size: 1.05rem; }
+.unlock-steps { text-align: left; max-width: 420px; margin: 22px auto 0; padding-left: 1.3em; color: var(--muted); display: grid; gap: 8px; }
+.unlock-steps b { color: var(--ink); }
+.linkish { border: 0; background: none; padding: 0; font: inherit; color: var(--gold-ink); text-decoration: underline; cursor: pointer; }
+.n-faq { max-width: 760px; margin: 110px auto 0; }
+.n-faq h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 18px; }
+.n-faq details { border-bottom: 1px solid var(--rule); padding: 16px 0; }
+.n-faq summary { cursor: pointer; font-family: var(--display); font-size: 1.25rem; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+.n-faq summary::after { content: "+"; color: var(--gold-ink); font-family: var(--body); transition: transform .3s var(--ease); }
+.n-faq details[open] summary::after { transform: rotate(45deg); }
+.n-faq details p { color: var(--muted); margin: 10px 0 0; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 980px) { .offer { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 26px; } .o2, .o2:hover { transform: none; } }
+@media (max-width: 560px) { .offer { grid-template-columns: 1fr; } }

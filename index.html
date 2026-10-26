@@ -17,13 +17,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=20261025k">
-<link rel="stylesheet" href="assets/css/home.css?v=20261025k">
+<link rel="stylesheet" href="assets/css/site.css?v=20261026a">
+<link rel="stylesheet" href="assets/css/home.css?v=20261026a">
+<link rel="stylesheet" href="assets/css/home2.css?v=20261026a">
 <link rel="preload" as="image" href="assets/img/icon-photo.webp">
 <link rel="preload" as="image" href="assets/img/wordmark-day.webp">
 <link rel="preload" as="image" href="assets/img/wordmark-night.webp?v=2">
 </head>
-<body class="home">
+<body class="home home-v2">
+<div class="act1" id="act1">
+<div class="stage" id="stage">
 <header class="home-top">
   <a class="wordmark" href="./" aria-label="Oluwaseyi Ashiru, home">
     <img class="wm-day" src="assets/img/wordmark-day.webp" width="640" height="249" alt="Oluwaseyi Ashiru — Making Knowledge Usable">
@@ -53,14 +56,86 @@
       <text class="rw-about-text"><textPath href="#ring-path" id="ring-about" startOffset="760" text-anchor="middle"><a href="about.html" class="rw-about"><tspan>About</tspan></a></textPath></text>
     </svg>
   </div>
+  <div class="order-card" id="order-card" aria-hidden="true">
+    <p class="oc-k">Same knowledge</p>
+    <p class="oc-t">Now in order.</p>
+    <p class="oc-s">That is what happens to what you bring here: one thing, then the next.</p>
+  </div>
 </div>
 
-<footer class="home-foot">
+<div class="scroll-cue" id="scroll-cue" aria-hidden="true"><span>Scroll to bring order</span><i></i></div>
+</div>
+</div>
+
+<main class="home-acts">
+  <section class="act act-how" aria-labelledby="how-title">
+    <div class="wrap">
+      <p class="act-k">How it works</p>
+      <h2 id="how-title">From what you heard to what you do.</h2>
+      <ol class="use-row">
+        <li><span class="ul">U</span><h3>Understand it</h3><p>We read the video, sermon, post or AI answer you bring and pull out what it actually teaches.</p></li>
+        <li><span class="ul">S</span><h3>Simplify it</h3><p>We keep the one idea that fits your goal and shrink it to something you can start today.</p></li>
+        <li><span class="ul">E</span><h3>Execute it</h3><p>You do one thing, tick it, and see it work. Then the next.</p></li>
+      </ol>
+      <div class="demo" id="demo">
+        <div class="demo-in">
+          <p class="demo-l">You bring</p>
+          <p class="demo-src"><span class="tagc">YouTube · 41 min</span> “How to price your services” by a design coach</p>
+        </div>
+        <div class="demo-arrow" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="demo-out">
+          <p class="demo-l">You leave with</p>
+          <p class="demo-from">From the video: the “good, better, best” rule (12:40)</p>
+          <p class="demo-step" id="demo-step" data-text="Write a three-tier price list for your design service using her good, better, best rule, and send it to two past clients today."></p>
+          <p class="demo-meta">30 minutes · done when two clients have your list</p>
+        </div>
+      </div>
+      <a class="btn-alive" href="start.html"><span class="ba-shine" aria-hidden="true"></span><span class="ba-text">Find my one thing</span><svg class="ba-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </section>
+
+  <section class="act act-ladder" aria-labelledby="ladder-title">
+    <div class="wrap">
+      <p class="act-k">Go as far as you choose</p>
+      <h2 id="ladder-title">One step free. The rest when you’re ready.</h2>
+      <ol class="tiers">
+        <li class="tier t1"><p class="t-price">Free</p><h3>Your first step</h3><p>One source in, one step out, made from what you shared.</p></li>
+        <li class="tier t2"><p class="t-price">$1</p><h3>Your full USE Pack</h3><p>The whole plan, truth check, 7-day tracker and fixes. Saved, downloadable, emailed.</p></li>
+        <li class="tier t3"><p class="t-price">Monthly</p><h3>Deeper Systems</h3><p>Ten packs a month from your links and uploads, all kept in one place.</p></li>
+        <li class="tier t4"><p class="t-price">By invitation</p><h3>The Inner Circle</h3><p>A closed fellowship of doers, with accountability on the same path.</p></li>
+      </ol>
+      <a class="act-link" href="commit.html">See the next level →</a>
+    </div>
+  </section>
+
+  <section class="act act-speak" aria-labelledby="speak-title">
+    <div class="wrap speak-grid">
+      <div>
+        <p class="act-k">For churches, schools, teams and conferences</p>
+        <h2 id="speak-title">Bring <em>Making Knowledge Usable</em> to your stage.</h2>
+        <p class="act-p">A keynote or workshop where your people leave with a step they can take the same day, not just notes.</p>
+        <a class="btn btn-gold" href="speak.html">Book Oluwaseyi to speak</a>
+      </div>
+      <ul class="speak-topics">
+        <li>From hearing to doing</li><li>From sermon to steps</li><li>AI made usable</li><li>From learning to earning</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="act act-close">
+    <div class="wrap">
+      <blockquote><p>“But prove yourselves doers of the word, and not merely hearers who delude themselves.”</p><cite>James 1:22, NASB 1995</cite></blockquote>
+      <p class="close-sign">Now use it.</p>
+    </div>
+  </section>
+</main>
+<footer class="home-foot v2">
   <span>© <span id="year">2026</span> Oluwaseyi Ashiru. All rights reserved.</span>
 </footer>
 
-<script src="assets/js/config.js?v=20261025k"></script>
-<script src="assets/js/core.js?v=20261025k"></script>
-<script src="assets/js/home.js?v=20261025k"></script>
+<script src="assets/js/config.js?v=20261026a"></script>
+<script src="assets/js/core.js?v=20261026a"></script>
+<script src="assets/js/home.js?v=20261026a"></script>
+<script src="assets/js/home2.js?v=20261026a"></script>
 </body>
 </html>

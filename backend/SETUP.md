@@ -48,3 +48,14 @@ URL stays the same.
 - Gmail sends about 100 emails a day from a free account (each entry sends two: visitor and you).
 - Each pack takes roughly 20–90 seconds; long videos take longer.
 - Everything stays in your Google account. Visitors agree to this on the form before sending.
+
+## 6. Switch on the $1 unlock (Paystack)
+
+1. Create a free account at https://paystack.com and finish the business verification.
+2. In Paystack, go to **Payments ▸ Payment Pages ▸ Create page**: a single payment page, amount **₦1,500** (or $1 if your account takes USD), name it "Unlock my full USE Pack".
+3. In the page settings, set **Redirect after payment** to `https://seyidev-ops.github.io/oluwaseyiashiru/start.html`.
+4. Copy the page link (it looks like `https://paystack.com/pay/...`) and send it to Claude, or paste it into `assets/js/config.js` as `window.OA_PAY = { link: 'https://paystack.com/pay/...' };`.
+5. In Paystack, go to **Settings ▸ API Keys & Webhooks** and copy your **Live Secret Key**.
+6. In Apps Script, **Project Settings ▸ Script properties ▸ Add**: `PAYSTACK_SECRET_KEY` = that secret key. Optionally `PAY_MIN_NGN` (default 1000) to set the lowest naira amount that counts as a valid unlock.
+
+The secret key stays in Script Properties only. Never put it in the website code.
