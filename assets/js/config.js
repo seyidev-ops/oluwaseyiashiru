@@ -19,3 +19,6 @@ window.OA_LINKS = {
 /* OA_PAY.link: your Paystack payment page for the $1 unlock (set its "redirect after payment" to .../start.html).
    While empty, the unlock button opens WhatsApp with the visitor's pack number instead. */
 window.OA_PAY = { link: 'https://paystack.shop/pay/1dollarc', monthly: 'https://paystack.shop/pay/deepersystems' };
+
+/* The Roast Room: pay = the Paystack page for one roast (redirects to the room). Empty: booking goes to WhatsApp. */
+window.OA_ROAST = { pay: 'https://paystack.shop/pay/roastmyidea', engine: 'https://engine.oluwaseyiashiru.com' };

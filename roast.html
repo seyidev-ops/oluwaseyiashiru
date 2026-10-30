@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Roast Room</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Got a business idea? A council of AI advisors modelled on famous founders and investors roasts it and hands you a scored verdict and a PDF.">
+<meta name="theme-color" content="#14213D">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<script>(function(){var d=document.documentElement,m;try{m=localStorage.getItem('oa-theme');}catch(e){}if(m!=='dark'&&m!=='light'){d.classList.add('is-auto');m=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}d.setAttribute('data-theme',m);if(m==='dark')d.classList.add('is-dark');})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css?v=20261030b">
+<link rel="stylesheet" href="assets/css/commit2.css?v=20261030b">
+<link rel="stylesheet" href="assets/css/speak.css?v=20261030b">
+<link rel="stylesheet" href="assets/css/roast.css?v=20261030b">
+</head>
+<body class="inner">
+<canvas class="threads" aria-hidden="true"></canvas>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="home-link" href="./" aria-label="Oluwaseyi Ashiru, home"><img class="logo-day" src="assets/img/logo-photo-full.webp" width="720" height="280" alt="Oluwaseyi Ashiru — Making Knowledge Usable"><img class="logo-night" src="assets/img/logo-night-full.webp?v=2" width="720" height="253" alt="Oluwaseyi Ashiru — Making Knowledge Usable"></a>
+    <div class="top-right">
+    <button class="nav-orb" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open navigation"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="o-ring" cx="24" cy="24" r="21"/><circle class="o-moon" cx="45" cy="24" r="2.2"/><path class="o-l1" d="M15 19h18"/><path class="o-l2" d="M15 24h12"/><path class="o-l3" d="M15 29h18"/></svg></button>
+    <nav aria-label="Main" id="site-nav" class="nav-sheet">
+      <ol class="ns-list">
+        <li><a href="./"><span class="ns-n">01</span><span class="ns-t">Home</span><span class="ns-d">Where the knowledge runs</span></a></li>
+        <li><a href="start.html"><span class="ns-n">02</span><span class="ns-t">Start</span><span class="ns-d">Make what you know usable</span></a></li>
+        <li><a href="commit.html"><span class="ns-n">03</span><span class="ns-t">Next level</span><span class="ns-d">The $1 commitment and beyond</span></a></li>
+        <li><a href="about.html"><span class="ns-n">04</span><span class="ns-t">About</span><span class="ns-d">Who I am and how it works</span></a></li>
+        <li><a href="speak.html"><span class="ns-n">05</span><span class="ns-t">Speaking</span><span class="ns-d">Invite Oluwaseyi to your event</span></a></li>
+        <li><a href="roast.html" aria-current="page"><span class="ns-n">06</span><span class="ns-t">Roast Room</span><span class="ns-d">Get your business idea roasted</span></a></li>
+      </ol>
+      <p class="ns-quote">“What you put to work, works for you.” <span>— Oluwaseyi Ashiru</span></p>
+    </nav>
+    </div>
+  </div>
+</header>
+
+<main class="inner-main">
+  <section class="rr-hero">
+    <div class="wrap rr-hero-grid">
+      <div>
+        <p class="n-kick">The Roast Room</p>
+        <h1>Got a business idea?<br><em>Let the council roast it.</em></h1>
+        <p class="sp-lede">AI advisors modelled on Jeff Bezos, Alex Hormozi, Warren Buffett, Elon Musk and more pull your idea apart, argue it out over three rounds, and hand you a scored verdict you can download as a PDF. On your phone, in about ten minutes.</p>
+        <div class="sp-actions"><a class="btn-alive rr-book" href="roast-room/"><span class="ba-shine" aria-hidden="true"></span><span class="ba-text">Enter the Roast Room</span><svg class="ba-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a><a class="btn btn-line" href="#how">How it works</a></div>
+      </div>
+      <div class="rt" aria-hidden="true">
+        <div class="rt-table"><span class="rt-score"><b id="rt-n">7.4</b><small>/10</small></span><span class="rt-call" id="rt-call">Start small, test in 30 days</span></div>
+        <span class="rt-seat s0"><img src="roast-room/portraits/bezos-base.webp" alt=""></span><span class="rt-seat s1"><img src="roast-room/portraits/graham-base.webp" alt=""></span><span class="rt-seat s2"><img src="roast-room/portraits/hormozi-base.webp" alt=""></span><span class="rt-seat s3"><img src="roast-room/portraits/garyvee-base.webp" alt=""></span><span class="rt-seat s4"><img src="roast-room/portraits/martell-base.webp" alt=""></span><span class="rt-seat s5"><img src="roast-room/portraits/wickman-base.webp" alt=""></span><span class="rt-seat s6"><img src="roast-room/portraits/buffett-base.webp" alt=""></span>
+        
+        <p class="rt-bubble" id="rt-bubble">Who pays first, and how much?</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="rr-how" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <h2 id="how-title">How a roast works</h2>
+      <ol class="rr-steps">
+        <li><b>Book your roast</b><span>Pay once, by card or bank transfer. No app, no laptop, no setup.</span></li>
+        <li><b>Describe your idea</b><span>What it is, who it is for, how it makes money, and what you have to work with.</span></li>
+        <li><b>Watch them argue</b><span>The Chair picks the advisors who fit your idea. They open, debate and vote, live on your screen.</span></li>
+        <li><b>Take the verdict</b><span>The call, the score, who disagreed and why, and your next steps. Download it as a PDF.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="rr-council" aria-labelledby="council-title">
+    <div class="wrap">
+      <h2 id="council-title">Who sits at the table</h2>
+      <p class="sp-hint">Twelve advisors, each owning one hard question. The Chair seats the ones your idea needs.</p>
+      <ul class="rr-seats"><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/bezos-base.webp" width="92" height="92" alt="" loading="lazy"><b>Jeff Bezos</b><span class="rr-p">Strategy and decisions</span><span>Is this the right bet, and how reversible is it?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/graham-base.webp" width="92" height="92" alt="" loading="lazy"><b>Paul Graham</b><span class="rr-p">Product and startups</span><span>Do people actually want this, and is it growing?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/hormozi-base.webp" width="92" height="92" alt="" loading="lazy"><b>Alex Hormozi</b><span class="rr-p">Offers, pricing and sales</span><span>Will people pay, how much, and how do we close?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/garyvee-base.webp" width="92" height="92" alt="" loading="lazy"><b>Gary Vaynerchuk</b><span class="rr-p">Marketing and attention</span><span>Where does the attention come from?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/martell-base.webp" width="92" height="92" alt="" loading="lazy"><b>Dan Martell</b><span class="rr-p">People, hiring and founder time</span><span>Who does this, and what does it cost your calendar?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/wickman-base.webp" width="92" height="92" alt="" loading="lazy"><b>Gino Wickman</b><span class="rr-p">Operations and scaling</span><span>Can the business run this without you holding it together?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/buffett-base.webp" width="92" height="92" alt="" loading="lazy"><b>Warren Buffett</b><span class="rr-p">Money and capital</span><span>What does it do to cash, risk and long-term value?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/naval-base.webp" width="92" height="92" alt="" loading="lazy"><b>Naval Ravikant</b><span class="rr-p">Leverage and wealth</span><span>Does this build something you own, or rent out your time?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/sanchez-base.webp" width="92" height="92" alt="" loading="lazy"><b>Codie Sanchez</b><span class="rr-p">Buying small businesses</span><span>Should you build this, or buy something that already works?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/leila-base.webp" width="92" height="92" alt="" loading="lazy"><b>Leila Hormozi</b><span class="rr-p">Leadership and teams</span><span>Can your team carry this, and who has to change?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/blakely-base.webp" width="92" height="92" alt="" loading="lazy"><b>Sara Blakely</b><span class="rr-p">Consumer brand from zero</span><span>Will customers love it enough to sell it for you?</span></li><li class="rr-seat"><img class="rr-av" src="roast-room/portraits/musk-base.webp" width="92" height="92" alt="" loading="lazy"><b>Elon Musk</b><span class="rr-p">First principles and speed</span><span>What is the real constraint, and can we build it faster?</span></li></ul>
+      <p class="rr-fine">The advisors are AI simulations built from each person’s public work: books, letters, talks and interviews. They are not the real people, are not affiliated with or endorsed by them, and do not speak for them. A roast is a thinking tool, not financial or legal advice. For adults 18 and over.</p>
+    </div>
+  </section>
+
+  <section class="rr-price" id="price" aria-labelledby="price-title">
+    <div class="wrap rr-price-grid">
+      <div>
+        <h2 id="price-title">One roast, one decision.</h2>
+        <p class="sp-lede">Better to hear the hard questions now than after you’ve spent the money.</p>
+        <ul class="o-list rr-get"><li>A full council: three rounds, up to seven advisors</li><li>A scored verdict with the reasons and the dissent</li><li>Your next steps, in order</li><li>A PDF to keep and share</li></ul>
+      </div>
+      <div class="rr-ticket">
+        <p class="t-k">Per roast</p>
+        <p class="rr-amt">₦15,000 <small>about $10</small></p>
+        <a class="btn btn-gold" id="rr-pay" href="roast-room/">Book my roast</a>
+        <p class="rr-note" id="rr-note">Paid securely with Paystack, right inside the Roast Room. For adults 18 and over.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="n-faq" aria-labelledby="faq-title">
+    <h2 id="faq-title">Good questions</h2>
+    <details><summary>Are these the real people?</summary><p>No. Each advisor is an AI simulation built from that person’s public work: books, letters, talks and interviews. They are not the people and do not speak for them.</p></details>
+    <details><summary>How long does a roast take?</summary><p>About five to ten minutes. Keep the page open while the council works. If you close it by mistake, open the same page again and your roast picks up.</p></details>
+    <details><summary>What should I write?</summary><p>The idea in one line, who it is for, how it makes money, what you have (cash, time, team), your deadline, and which way you are leaning. The more you give, the sharper the roast.</p></details>
+    <details><summary>Is it advice?</summary><p>It is a structured second opinion to help you think. For legal, tax or investment decisions, speak to a professional.</p></details>
+  </section>
+</main>
+
+<footer class="foot" aria-label="Site footer">
+  <div class="marquee m-big" aria-hidden="true"><div class="m-track"><span>Academics</span><span>Business</span><span>Faith</span><span>AI and tech</span><span>Careers</span><span>Family</span><span>Money</span><span>Health</span><span>Creative work</span><span>Skills and trades</span><span>Leadership</span><span>Academics</span><span>Business</span><span>Faith</span><span>AI and tech</span><span>Careers</span><span>Family</span><span>Money</span><span>Health</span><span>Creative work</span><span>Skills and trades</span><span>Leadership</span></div></div>
+  <div class="wrap foot-row">
+    <p class="foot-small">© <span id="year">2026</span> Oluwaseyi Ashiru. All rights reserved.</p>
+    <nav class="foot-links" aria-label="Legal"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
+  </div>
+</footer>
+
+<script src="assets/js/config.js?v=20261030b"></script>
+<script src="assets/js/core.js?v=20261030b"></script>
+<script src="assets/js/roast.js?v=20261030b"></script>
+</body>
+</html>
