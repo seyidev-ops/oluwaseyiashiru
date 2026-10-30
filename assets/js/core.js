@@ -425,7 +425,35 @@
     if (window.location.search.indexOf('fresh=') > -1) { try { history.replaceState(null, '', window.location.pathname + window.location.hash); } catch (e) {} }
   }
 
+  /* ---------------- Install as an app (Start and Roast Room pages) ---------------- */
+  var installEvt = null;
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(function () {});
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); installEvt = e; document.querySelectorAll('[data-install]').forEach(function (b) { b.hidden = false; }); });
+  window.addEventListener('appinstalled', function () { document.querySelectorAll('[data-install]').forEach(function (b) { b.hidden = true; }); });
+  function mountInstall() {
+    var btns = document.querySelectorAll('[data-install]'); if (!btns.length) return;
+    var standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    if (standalone) return;
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    btns.forEach(function (b) {
+      if (ios || installEvt) b.hidden = false;
+      setTimeout(function () { b.hidden = false; }, 2500); /* browsers without an install prompt still get the how-to */
+      b.addEventListener('click', function () {
+        if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(function () { installEvt = null; }); return; }
+        var tip = document.querySelector('.install-tip') || document.createElement('div');
+        tip.className = 'install-tip'; tip.setAttribute('role', 'status');
+        tip.innerHTML = ios
+          ? '<b>Add it to your home screen</b>Tap the <span class="share-ic">Share</span> button in Safari, then <b>Add to Home Screen</b>.'
+          : '<b>Install the app</b>Open your browser menu (⋮) and choose <b>Install app</b> or <b>Add to Home screen</b>.';
+        var x = document.createElement('button'); x.type = 'button'; x.className = 'install-x'; x.setAttribute('aria-label', 'Close'); x.textContent = '×';
+        x.onclick = function () { tip.remove(); }; tip.appendChild(x);
+        b.insertAdjacentElement('afterend', tip);
+      });
+    });
+  }
+
   function ready() {
+    mountInstall();
     mountFloatTools(); mountToggles(); mountMenu(); mountSocial();
     var th = document.querySelector('canvas.threads'); if (th && th.getContext) Threads(th);
     var y = document.getElementById('year'); if (y) y.textContent = new Date().getFullYear();

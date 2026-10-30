@@ -320,3 +320,4 @@
 .intro .btn-alive { min-height: clamp(52px, 7vh, 62px); animation-delay: 3.1s; }
 .intro-note { margin-top: clamp(8px, 1.6vh, 16px); animation-delay: 3.25s; }
 @media (max-width: 760px) { .intro { min-height: calc(100svh - 84px - 66px); } .intro .btn-alive { animation: rise .8s var(--ease) 3.1s both, breathe 4.5s ease-in-out 4.2s infinite; } }
+.intro .install-app { animation: rise .8s var(--ease) 3.4s both; }

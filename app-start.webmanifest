@@ -1,0 +1,24 @@
+{
+  "id": "start",
+  "name": "Oluwaseyi Ashiru — Making Knowledge Usable",
+  "short_name": "Oluwaseyi Ashiru",
+  "start_url": "start.html?app=1",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F7F5F0",
+  "theme_color": "#14213D",
+  "icons": [
+    {
+      "src": "assets/img/icon-192.png?v=2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/img/icon-512.png?v=2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

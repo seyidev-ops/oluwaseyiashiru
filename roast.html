@@ -7,16 +7,20 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Got a business idea? A council of AI advisors modelled on famous founders and investors roasts it and hands you a scored verdict and a PDF.">
 <meta name="theme-color" content="#14213D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Roast Room">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png?v=2">
+<link rel="manifest" href="app-roast.webmanifest?v=1">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=2">
 <script>(function(){var d=document.documentElement,m;try{m=localStorage.getItem('oa-theme');}catch(e){}if(m!=='dark'&&m!=='light'){d.classList.add('is-auto');m=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}d.setAttribute('data-theme',m);if(m==='dark')d.classList.add('is-dark');})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=20261030c">
-<link rel="stylesheet" href="assets/css/commit2.css?v=20261030c">
-<link rel="stylesheet" href="assets/css/speak.css?v=20261030c">
-<link rel="stylesheet" href="assets/css/roast.css?v=20261030c">
+<link rel="stylesheet" href="assets/css/site.css?v=20261030d">
+<link rel="stylesheet" href="assets/css/commit2.css?v=20261030d">
+<link rel="stylesheet" href="assets/css/speak.css?v=20261030d">
+<link rel="stylesheet" href="assets/css/roast.css?v=20261030d">
 </head>
 <body class="inner">
 <canvas class="threads" aria-hidden="true"></canvas>
@@ -49,6 +53,7 @@
         <h1>Got a business idea?<br><em>Let the council roast it.</em></h1>
         <p class="sp-lede">AI advisors modelled on Jeff Bezos, Alex Hormozi, Warren Buffett, Elon Musk and more pull your idea apart, argue it out over three rounds, and hand you a scored verdict you can download as a PDF. On your phone, in about ten minutes.</p>
         <div class="sp-actions"><a class="btn-alive rr-book" href="roast-room/"><span class="ba-shine" aria-hidden="true"></span><span class="ba-text">Enter the Roast Room</span><svg class="ba-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg></a><a class="btn btn-line" href="#how">How it works</a></div>
+        <button class="install-app" type="button" data-install hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M12 8v7M9 12.5l3 3 3-3"/></svg><span>Install the app</span></button>
       </div>
       <div class="rt" aria-hidden="true">
         <div class="rt-table"><span class="rt-score"><b id="rt-n">7.4</b><small>/10</small></span><span class="rt-call" id="rt-call">Start small, test in 30 days</span></div>
@@ -113,8 +118,8 @@
   </div>
 </footer>
 
-<script src="assets/js/config.js?v=20261030c"></script>
-<script src="assets/js/core.js?v=20261030c"></script>
-<script src="assets/js/roast.js?v=20261030c"></script>
+<script src="assets/js/config.js?v=20261030d"></script>
+<script src="assets/js/core.js?v=20261030d"></script>
+<script src="assets/js/roast.js?v=20261030d"></script>
 </body>
 </html>
