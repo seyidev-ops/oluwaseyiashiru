@@ -112,3 +112,12 @@ html.is-dark .core-shadow { background: radial-gradient(closest-side, #000, rgba
   .core { width: 50vw; }
   .call-ring { width: calc(50vw * 1.16); }
 }
+
+/* the menu sits under the logo, centred, before the quote */
+.home-top { flex-direction: column; gap: 4px; padding-bottom: 4px; }
+.home-menu { display: flex; justify-content: center; }
+.home-menu .nav-orb { width: 44px; height: 44px; }
+.home-menu .nav-orb svg { width: 38px; height: 38px; }
+body.nav-open .home-top { z-index: 70; background: transparent; }
+body.nav-open .act1 { z-index: 80; }
+.home-top .wordmark, .home-menu { position: relative; z-index: 60; }

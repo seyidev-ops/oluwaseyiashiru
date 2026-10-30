@@ -94,7 +94,7 @@
   function mountMenu() {
     var btn = document.querySelector('.nav-orb'), nav = document.getElementById('site-nav');
     if (!btn || !nav) return;
-    document.body.appendChild(nav);
+    if (!nav.closest('.home-top')) document.body.appendChild(nav); // on the home page the sheet stays with its button, above the chaos
     function set(open) {
       var r = btn.getBoundingClientRect();
       nav.style.setProperty('--ox', (r.left + r.width / 2) + 'px'); nav.style.setProperty('--oy', (r.top + r.height / 2) + 'px');
@@ -104,7 +104,11 @@
       if (open) setTimeout(function () { var a = nav.querySelector('a'); if (a) a.focus({ preventScroll: true }); }, 450);
     }
     btn.addEventListener('click', function () { set(!nav.classList.contains('open')); });
-    nav.addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
+    nav.addEventListener('click', function (e) {
+      var gb = e.target.closest('.ns-gb');
+      if (gb) { var g = gb.parentNode, open = !g.classList.contains('open'); g.classList.toggle('open', open); gb.setAttribute('aria-expanded', open ? 'true' : 'false'); return; }
+      if (e.target.closest('a')) set(false);
+    });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && nav.classList.contains('open')) { set(false); btn.focus(); } });
   }
 

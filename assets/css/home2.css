@@ -77,3 +77,4 @@ body.home-v2 { overflow: visible; display: block; touch-action: auto; height: au
   .tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tier { min-height: 0; } .speak-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) { .tiers { grid-template-columns: 1fr; } .act h2 { margin-bottom: 28px; } }
+.t-price small { font: 500 .8rem var(--body); opacity: .8; }

@@ -261,3 +261,23 @@ main.inner-main { min-height: calc(100vh - 104px); padding-bottom: 72px; }
 @property --p { syntax: "<number>"; inherits: true; initial-value: 0; }
 @keyframes breathe { 0%, 100% { --p: 0; } 50% { --p: 1; } }
 .btn-alive { text-decoration: none; }
+
+/* menu groups: tap a heading to open its pages */
+.ns-gb { all: unset; box-sizing: border-box; cursor: pointer; width: 100%; display: grid; grid-template-columns: 3.2rem 1fr auto; grid-template-rows: auto auto; column-gap: 8px; align-items: baseline; padding: 11px 0; color: var(--ink);
+  border-bottom: 1px solid var(--rule); opacity: 0; transform: translateY(30px); transition: opacity .5s, transform .6s var(--ease); }
+.nav-sheet.open .ns-gb { opacity: 1; transform: none; }
+.nav-sheet.open li:nth-child(2) .ns-gb { transition-delay: .33s; } .nav-sheet.open li:nth-child(4) .ns-gb { transition-delay: .49s; }
+.ns-gb .ns-d { grid-column: 2; }
+.ns-chev { grid-column: 3; grid-row: 1 / 3; align-self: center; width: 12px; height: 12px; border-right: 2px solid var(--gold-ink); border-bottom: 2px solid var(--gold-ink); transform: rotate(45deg); transition: transform .35s var(--ease); margin-right: 6px; }
+.ns-g.open .ns-chev { transform: rotate(-135deg); }
+.ns-gb:hover .ns-t, .ns-gb:focus-visible .ns-t { color: var(--gold-ink); transform: translateX(14px); font-style: italic; }
+.ns-gb:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+.ns-sub { list-style: none; margin: 0; padding: 0 0 0 3.2rem; max-height: 0; overflow: hidden; transition: max-height .5s var(--ease); }
+.ns-g.open .ns-sub { max-height: 320px; }
+.ns-sub a { display: flex; flex-direction: column; gap: 2px; padding: 10px 0 10px 14px; border-left: 2px solid var(--rule); color: var(--ink); text-decoration: none; opacity: 1 !important; transform: none !important; border-bottom: 0 !important; }
+.ns-sub a:hover .ns-st, .ns-sub a:focus-visible .ns-st { color: var(--gold-ink); }
+.ns-sub a[aria-current="page"] { border-left-color: var(--gold); }
+.ns-sub a[aria-current="page"] .ns-st { color: var(--gold-ink); }
+.ns-st { font-family: var(--display); font-size: clamp(1.25rem, 2.4vw, 1.7rem); line-height: 1.1; transition: color .3s; }
+.ns-sd { font-size: .82rem; color: var(--muted); }
+@media (max-width: 760px) { .ns-gb { grid-template-columns: 2.4rem 1fr auto; } .ns-sub { padding-left: 2.4rem; } }
