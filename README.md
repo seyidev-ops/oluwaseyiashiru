@@ -14,3 +14,9 @@ Brand rules: see the Oluwaseyi Ashiru Brand Guidelines (v1.0). Never redraw or r
 ## USE Pack engine
 
 `backend/` holds the Google Apps Script that turns each Start-page entry into a USE Pack (Drive, Sheet, Gemini, PDF, email). Setup: `backend/SETUP.md`. The site switches it on when `assets/js/config.js` has the web app URL.
+
+## SEO
+
+- `sitemap.xml` lists the public pages (edit it by hand when a page is added); `robots.txt` points to it.
+- `googlef394f795304cbe59.html` is the Google Search Console ownership file. Keep it in the root.
+- Each public page carries a canonical URL, Open Graph and Twitter tags (absolute `og-image.jpg`); `index.html` also has Person/WebSite JSON-LD.
