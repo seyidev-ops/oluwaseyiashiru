@@ -26,7 +26,7 @@
       if (d.type === 'partner' && (d.org || '').length < 2) { msg.textContent = 'Add your organisation.'; return; }
       if (d.type !== 'partner' && !d.consent) { msg.textContent = 'Tick the box to agree to how your answers are used.'; return; }
       var url = (window.OA_ENDPOINT || '').trim();
-      function done() { f.classList.add('sent'); msg.innerHTML = { attend: '<b>Request received.</b> Check your email. We’ll let you know when places are confirmed.', partner: '<b>Thank you.</b> We’ll be in touch within two working days.', circle: '<b>Application received.</b> We review every one and will reply by email.' }[d.type]; }
+      function done() { window.oaTrack && oaTrack({ attend: 'CompleteRegistration', partner: 'Lead', circle: 'SubmitApplication' }[d.type] || 'Lead', { content_name: 'DO THIS: ' + d.type }); f.classList.add('sent'); msg.innerHTML = { attend: '<b>Request received.</b> Check your email. We’ll let you know when places are confirmed.', partner: '<b>Thank you.</b> We’ll be in touch within two working days.', circle: '<b>Application received.</b> We review every one and will reply by email.' }[d.type]; }
       function fail() { msg.innerHTML = 'We couldn’t send that just now. Please message <b>+234 703 313 4979</b> on WhatsApp.'; btn.disabled = false; }
       if (!url) return fail();
       btn.disabled = true; msg.textContent = 'Sending…';
