@@ -5,11 +5,11 @@
   window.oaTrack = function (name, params) {
     try { if (window.fbq) window.fbq(STANDARD.test(name) ? 'track' : 'trackCustom', name, params || {}); } catch (e) {}
   };
-  /* Paystack checkouts. Prices come from the commit page ($1 unlock, $5 a month); the roast page shows its own price. */
+  /* Paystack checkouts, priced as the pages show them: $1 unlock, $5/month Deeper Systems, ₦15,000 a roast. */
   var CHECKOUT = {
     '1dollarc': { content_name: 'USE Pack unlock', value: 1, currency: 'USD' },
     'deepersystems': { content_name: 'Deeper Systems', value: 5, currency: 'USD' },
-    'roastmyidea': { content_name: 'Roast Room' }
+    'roastmyidea': { content_name: 'Roast Room', value: 15000, currency: 'NGN' }
   };
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[href]');

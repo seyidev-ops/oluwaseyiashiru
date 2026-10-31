@@ -476,7 +476,7 @@ function markRow(id, stage, status) {
   for (var i = ids.length - 1; i >= 0; i--) if (ids[i][0] === id) { sh.getRange(i + 2, 19, 1, 2).setValues([[stage, status]]); return; }
 }
 
-/* Deeper Systems ($5 a month): confirm the subscription payment, record the member, tell both sides. */
+/* Deeper Systems ($5/month): confirm the subscription payment, record the member, tell both sides. */
 function member(d) {
   var ref = String(d.reference || '').trim(), secret = prop('PAYSTACK_SECRET_KEY');
   if (!ref) return { ok: false, error: 'No payment reference came back from the checkout.' };
