@@ -128,6 +128,6 @@
   fetch(url, { method: 'POST', body: JSON.stringify({ action: 'member', reference: ref }) }).then(function (r) { return r.json(); }).then(function (o) {
     if (!o.ok) { h.textContent = 'We couldn’t confirm it yet.'; p.textContent = o.error; return; }
     try { var s = JSON.parse(localStorage.getItem('oa-plan') || '{}'); s.member = o.email || true; localStorage.setItem('oa-plan', JSON.stringify(s)); } catch (e) {}
-    h.textContent = 'Welcome to Deeper Systems.'; p.textContent = 'Your month has started. A welcome email is on its way' + (o.email ? ' to ' + o.email : '') + '. Your ten packs a month open in full on the Start page.';
+    window.oaTrack && oaTrack('Subscribe', { content_name: 'Deeper Systems', value: 5, currency: 'USD', predicted_ltv: 5 }); h.textContent = 'Welcome to Deeper Systems.'; p.textContent = 'Your month has started. A welcome email is on its way' + (o.email ? ' to ' + o.email : '') + '. Your ten packs a month open in full on the Start page.';
   }).catch(function () { h.textContent = 'We couldn’t reach the engine.'; p.textContent = 'Refresh this page to try again. Your payment is safe.'; });
 })();

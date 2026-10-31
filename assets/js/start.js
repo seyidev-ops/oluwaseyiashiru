@@ -507,6 +507,7 @@
       engine.classList.remove('working'); ['.e-bar', '.e-pct', '.e-note'].forEach(function (s) { var n = engine.querySelector(s); if (n) n.hidden = true; });
       if (!out.ok) { var er = new Error(out.error || 'failed'); er.code = out.code; er.detail = out.detail; throw er; }
       engine.classList.add('done');
+      window.oaTrack && oaTrack('Lead', { content_name: 'USE Pack', status: out.locked ? 'free step' : 'full pack' });
       engineMsg.textContent = out.locked ? 'Your one thing is above. Commit $1 and your full USE Pack opens here, with the PDF sent to your email.' : 'Your full USE Pack is below' + (out.member ? ' (Deeper Systems: ' + out.member + ' of 10 this month)' : '') + '. A copy is in your email.';
       if (out.locked) { fromPack(out.pack); renderPack(out.pack); gate(out.pack); } else showFull(out);
       if (out.pdf) {
@@ -620,7 +621,7 @@
     fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ action: 'unlock', id: id, reference: ref }) }).then(function (r) { return r.json(); }).then(function (out) {
       engine.classList.remove('working');
       if (!out.ok) { engine.classList.add('failed'); engineMsg.textContent = out.error; return; }
-      engine.classList.add('done'); engineMsg.textContent = 'Unlocked. Your full USE Pack is below, and a copy is on its way to your email.';
+      engine.classList.add('done'); window.oaTrack && oaTrack('Purchase', { content_name: 'USE Pack unlock', value: 1, currency: 'USD' }); engineMsg.textContent = 'Unlocked. Your full USE Pack is below, and a copy is on its way to your email.';
       showFull(out); save({ pack: out.pack, unlocked: true, packId: id });
     }).catch(function () { engine.classList.remove('working'); engine.classList.add('failed'); engineMsg.textContent = 'We couldn’t reach the engine. Refresh this page to try again; your payment is safe.'; });
   })();
