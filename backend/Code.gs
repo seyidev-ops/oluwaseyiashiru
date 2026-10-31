@@ -526,12 +526,12 @@ function doThis(d) {
   var ss = SpreadsheetApp.openById(prop('SHEET_ID')), sh = ss.getSheetByName(T[0]);
   if (!sh) { sh = ss.insertSheet(T[0]); sh.getRange(1, 1, 1, T[1].length).setValues([T[1]]).setFontWeight('bold').setBackground('#14213D').setFontColor('#F7F5F0'); sh.setFrozenRows(1); }
   var row = [new Date()].concat(T[2]()); sh.appendRow(row);
-  MailApp.sendEmail({ to: prop('OWNER_EMAIL'), replyTo: d.email, subject: T[0] + ': ' + (d.org || d.name),
-    htmlBody: '<table style="font-family:Arial,sans-serif;font-size:13px">' + T[1].slice(1, -1).map(function (h, i) { return '<tr><td style="padding:4px 10px;color:#5A6275">' + h + '</td><td style="padding:4px 10px">' + esc(row[i + 1]) + '</td></tr>'; }).join('') + '</table>' });
+  try { MailApp.sendEmail({ to: prop('OWNER_EMAIL'), replyTo: d.email, subject: T[0] + ': ' + (d.org || d.name),
+    htmlBody: '<table style="font-family:Arial,sans-serif;font-size:13px">' + T[1].slice(1, -1).map(function (h, i) { return '<tr><td style="padding:4px 10px;color:#5A6275">' + h + '</td><td style="padding:4px 10px">' + esc(row[i + 1]) + '</td></tr>'; }).join('') + '</table>' }); } catch (mx) { console.warn('DO THIS email not sent: ' + mx); }
   var reply = { attend: 'Thank you for requesting a place at DO THIS with Oluwaseyi. Places are limited and chosen for people who come ready to work. We will let you know when places are confirmed. Until then, start with your one thing: ' + prop('SITE_URL') + 'start.html',
     partner: 'Thank you for your interest in partnering with DO THIS with Oluwaseyi. We will be in touch within two working days.',
     circle: 'Thank you for applying to the founding Inner Circle cohort. We review every application and will reply by email.' }[d.type];
-  MailApp.sendEmail({ to: d.email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'DO THIS with Oluwaseyi', htmlBody: '<p>Hello ' + esc(String(d.name).split(' ')[0]) + ',</p><p>' + esc(reply) + '</p><p>Come with what you know. Leave with what you’ve done.<br>Oluwaseyi Ashiru</p>' });
+  try { MailApp.sendEmail({ to: d.email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'DO THIS with Oluwaseyi', htmlBody: '<p>Hello ' + esc(String(d.name).split(' ')[0]) + ',</p><p>' + esc(reply) + '</p><p>Come with what you know. Leave with what you’ve done.<br>Oluwaseyi Ashiru</p>' }); } catch (mx) { console.warn('DO THIS email not sent: ' + mx); }
   return { ok: true };
 }
 
