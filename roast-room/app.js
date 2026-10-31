@@ -109,7 +109,7 @@ function setupPublic() {
     state.ref = sessionStorage.getItem("roastRef") || "";
     state.code = sessionStorage.getItem("roastCode") || "";
   } catch { state.ref = ref || ""; state.code = code || ""; }
-  if (ref) window.oaTrack?.("RoastPaid", { content_name: "Roast Room" });
+  if (ref) window.oaTrack?.("Purchase", { content_name: "Roast Room", value: 15000, currency: "NGN" });
   if (ref || code) history.replaceState(null, "", location.pathname);
   document.body.classList.add("public");
   const disc = document.querySelector(".disclaimer"); if (disc) disc.textContent = "Advisors are simulations modelled on the public work of well-known founders and investors. They are not those people, are not affiliated with or endorsed by them, and do not speak for them. Not financial or legal advice. For adults 18 and over.";

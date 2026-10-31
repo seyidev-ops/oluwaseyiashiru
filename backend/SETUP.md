@@ -60,7 +60,7 @@ URL stays the same.
 
 The secret key stays in Script Properties only. Never put it in the website code.
 
-## 7. Deeper Systems ($5 a month)
+## 7. Deeper Systems ($5/month)
 
 1. In Paystack, **Products ▸ Plans ▸ Create plan**: "Deeper Systems", monthly, ₦7,500 (or $5).
 2. **Payment Pages ▸ Create page ▸ Subscription**, choose that plan.
