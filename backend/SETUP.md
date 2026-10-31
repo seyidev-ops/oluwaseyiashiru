@@ -53,7 +53,7 @@ URL stays the same.
 
 1. Create a free account at https://paystack.com and finish the business verification.
 2. In Paystack, go to **Payments ▸ Payment Pages ▸ Create page**: a single payment page, amount **₦1,500** (or $1 if your account takes USD), name it "Unlock my full USE Pack".
-3. In the page settings, set **Redirect after payment** to `https://seyidev-ops.github.io/oluwaseyiashiru/start.html`.
+3. In the page settings, set **Redirect after payment** to `https://oluwaseyiashiru.com/start.html`.
 4. Copy the page link (it looks like `https://paystack.com/pay/...`) and send it to Claude, or paste it into `assets/js/config.js` as `window.OA_PAY = { link: 'https://paystack.com/pay/...' };`.
 5. In Paystack, go to **Settings ▸ API Keys & Webhooks** and copy your **Live Secret Key**.
 6. In Apps Script, **Project Settings ▸ Script properties ▸ Add**: `PAYSTACK_SECRET_KEY` = that secret key. Optionally `PAY_MIN_NGN` (default 1500) to set the lowest naira amount that counts as a valid unlock.
@@ -64,5 +64,5 @@ The secret key stays in Script Properties only. Never put it in the website code
 
 1. In Paystack, **Products ▸ Plans ▸ Create plan**: "Deeper Systems", monthly, ₦7,500 (or $5).
 2. **Payment Pages ▸ Create page ▸ Subscription**, choose that plan.
-3. Set **Redirect after payment** to `https://seyidev-ops.github.io/oluwaseyiashiru/commit.html?plan=monthly`.
+3. Set **Redirect after payment** to `https://oluwaseyiashiru.com/commit.html?plan=monthly`.
 4. Send the page link to Claude. New members appear in a **Members** tab in your Sheet, and both of you get an email.

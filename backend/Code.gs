@@ -18,7 +18,7 @@ var DEFAULTS = {
   OWNER_EMAIL: 'info@oluwaseyiashiru.com',
   DAILY_LIMIT_PER_EMAIL: '3',
   MAX_UPLOAD_MB: '25',
-  SITE_URL: 'https://seyidev-ops.github.io/oluwaseyiashiru/',
+  SITE_URL: 'https://oluwaseyiashiru.com/',
   PAY_MIN_NGN: '1500',
   PAY_MIN_USD: '1'
 };
@@ -56,13 +56,13 @@ function prop(k) { return PropertiesService.getScriptProperties().getProperty(k)
 function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.check) {                                    // open .../exec?check=1 in a browser to test the setup
-    var out = { ok: true, sheet: !!prop('SHEET_ID'), key_present: !!prop('GEMINI_API_KEY'), model: prop('MODEL') };
+    var out = { ok: true, version: '2026-10-31', sheet: !!prop('SHEET_ID'), key_present: !!prop('GEMINI_API_KEY'), model: prop('MODEL') };
     try { out.gemini = gemini([{ text: 'Reply with the single word: ready' }], 'You are a test.', {}).trim().slice(0, 40); }
     catch (x) { out.ok = false; out.gemini_error = String(x.message || x); }
     if (p.url) { try { var s = readSource({ link: p.url }, null); out.source = { kind: s.kind, readable: s.readable, title: s.title, points: (s.points || []).slice(0, 5), note: s.note }; } catch (x2) { out.source_error = String(x2.message || x2); } }
     return json(out);
   }
-  return json({ ok: true, service: 'USE Pack engine', ready: !!prop('GEMINI_API_KEY') && !!prop('SHEET_ID') });
+  return json({ ok: true, service: 'USE Pack engine', version: '2026-10-31', ready: !!prop('GEMINI_API_KEY') && !!prop('SHEET_ID') });
 }
 
 function doPost(e) {
@@ -72,6 +72,7 @@ function doPost(e) {
     if (d.website) return json({ ok: true, ignored: true });               // honeypot: bots fill hidden fields
     if (d.action === 'unlock') { stage = 'unlock'; return json(unlock(d)); }
     if (d.action === 'booking') { stage = 'booking'; return json(booking(d)); }
+    if (d.action === 'dothis') { stage = 'dothis'; return json(doThis(d)); }
     if (d.action === 'member') { stage = 'member'; return json(member(d)); }
     var err = validate(d); if (err) return json({ ok: false, error: err });
     if (overLimit(d.email)) return json({ ok: false, error: 'You have made several packs today. Please try again tomorrow, or send your link on WhatsApp.' });
@@ -510,6 +511,28 @@ function memberUse(email) {
   var n = Number(props.getProperty(key) || 0); if (n >= 10) return 0;
   props.setProperty(key, String(n + 1)); sh.getRange(idx + 2, 9).setValue(n + 1);
   return n + 1;
+}
+
+/* DO THIS: free registrations, partner enquiries and Inner Circle applications, each in its own Sheet tab. */
+function doThis(d) {
+  var T = {
+    attend: ['DO THIS Registrations', ['Received', 'Name', 'Email', 'WhatsApp', 'City', 'Goal', 'Their one thing', 'What they have', 'Status'], function () { return [d.name, d.email, d.phone, d.city, d.goal, d.thing, d.have, 'New']; }],
+    partner: ['DO THIS Partners', ['Received', 'Name', 'Organisation', 'Email', 'Phone', 'Interest', 'Note', 'Status'], function () { return [d.name, d.org, d.email, d.phone, d.tier, d.note, 'New']; }],
+    circle: ['Inner Circle Applications', ['Received', 'Name', 'Email', 'WhatsApp', 'Hours a week', 'Six-week result', 'What stopped them', 'Link', 'Status'], function () { return [d.name, d.email, d.phone, d.hours, d.result, d.block, d.link, 'New']; }]
+  }[d.type];
+  if (!T) return { ok: false, error: 'Unknown form.' };
+  if (!d.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(d.email || ''))) return { ok: false, error: 'Add your name and a valid email.' };
+  if (d.type !== 'partner' && !d.consent) return { ok: false, error: 'Please agree to how your answers are used.' };
+  var ss = SpreadsheetApp.openById(prop('SHEET_ID')), sh = ss.getSheetByName(T[0]);
+  if (!sh) { sh = ss.insertSheet(T[0]); sh.getRange(1, 1, 1, T[1].length).setValues([T[1]]).setFontWeight('bold').setBackground('#14213D').setFontColor('#F7F5F0'); sh.setFrozenRows(1); }
+  var row = [new Date()].concat(T[2]()); sh.appendRow(row);
+  MailApp.sendEmail({ to: prop('OWNER_EMAIL'), replyTo: d.email, subject: T[0] + ': ' + (d.org || d.name),
+    htmlBody: '<table style="font-family:Arial,sans-serif;font-size:13px">' + T[1].slice(1, -1).map(function (h, i) { return '<tr><td style="padding:4px 10px;color:#5A6275">' + h + '</td><td style="padding:4px 10px">' + esc(row[i + 1]) + '</td></tr>'; }).join('') + '</table>' });
+  var reply = { attend: 'Thank you for requesting a place at DO THIS with Oluwaseyi. Places are limited and chosen for people who come ready to work. We will let you know when places are confirmed. Until then, start with your one thing: ' + prop('SITE_URL') + 'start.html',
+    partner: 'Thank you for your interest in partnering with DO THIS with Oluwaseyi. We will be in touch within two working days.',
+    circle: 'Thank you for applying to the founding Inner Circle cohort. We review every application and will reply by email.' }[d.type];
+  MailApp.sendEmail({ to: d.email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'DO THIS with Oluwaseyi', htmlBody: '<p>Hello ' + esc(String(d.name).split(' ')[0]) + ',</p><p>' + esc(reply) + '</p><p>Come with what you know. Leave with what you’ve done.<br>Oluwaseyi Ashiru</p>' });
+  return { ok: true };
 }
 
 /* Speaking requests from speak.html: a row in "Bookings" and an email to the owner. */
