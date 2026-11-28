@@ -53,7 +53,7 @@ export async function downloadVerdictPdf({ setup, verdict: ev, byKey, id }) {
   // Montserrat has no naira glyph (U+20A6); without this, ₦ amounts print blank in the PDF.
   const naira = (t) => (Array.isArray(t) ? t.map(naira) : typeof t === "string" ? t.replace(/₦\s?/g, "NGN ") : t);
   for (const fn of ["text", "getTextWidth", "splitTextToSize"]) { const orig = doc[fn].bind(doc); doc[fn] = (t, ...a) => orig(naira(t), ...a); }
-  const logo = "data:image/png;base64," + (await fetchBase64("brand/oa-logo-light.png"));
+  const logo = "data:image/png;base64," + (await fetchBase64("brand/oa-logo-light.png?v=20261128a"));
 
   const v = ev.verdict;
   const seats = ev.seats || [];

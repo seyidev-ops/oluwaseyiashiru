@@ -331,7 +331,7 @@ function makePack(d, source) {
   ].join('\n');
 
   var instructions = [
-    'You make knowledge usable for Oluwaseyi Ashiru ("Making Knowledge Usable"), using the USE method: Understand it, Simplify it, Execute it.',
+    'You make knowledge usable for Oluwaseyi Ashiru ("Turning Knowing into Doing"), using the USE method: Understand it, Simplify it, Execute it.',
     'THE JOB: give this person ONE first step that comes straight out of THIS source and moves them toward what they want, sized to the time they have today.',
     'Rules for first_step:',
     '- It must be built on ONE specific point from the source (name it in from_source, with the timestamp if there is one). Someone who has not seen the source should be able to tell which idea it uses.',
@@ -385,7 +385,7 @@ function packHtml(d, p, forOwner) {
   function h2(t) { return '<h2 style="font-family:Georgia,serif;color:' + navy + ';font-size:17px;margin:20px 0 4px">' + esc(t) + '</h2>'; }
   var s = p.source || {};
   var html = '<div style="font-family:Arial,Helvetica,sans-serif;color:' + navy + ';max-width:720px">' +
-    '<p style="letter-spacing:3px;font-size:10px;color:' + slate + ';text-transform:uppercase;border-bottom:2px solid ' + gold + ';padding-bottom:8px">USE Pack for ' + esc(d.name) + ' · Oluwaseyi Ashiru — Making Knowledge Usable</p>' +
+    '<p style="letter-spacing:3px;font-size:10px;color:' + slate + ';text-transform:uppercase;border-bottom:2px solid ' + gold + ';padding-bottom:8px">USE Pack for ' + esc(d.name) + ' · Oluwaseyi Ashiru — Turning Knowing into Doing</p>' +
     '<h1 style="font-family:Georgia,serif;font-size:28px;margin:6px 0 12px">' + esc(p.title) + '</h1>' +
     (p.note_to_visitor ? '<p style="font-size:12px;color:' + slate + '">' + esc(p.note_to_visitor) + '</p>' : '') +
     h2('The source') + table(['', ''], [['Source', s.title || d.link || 'Your description'], ['Made by', s.creator || ''], ['Length', s.length || ''], ['Who this is for', s.for_whom || ''], ['Status', s.status || '']]) +
@@ -424,7 +424,7 @@ function notifyVisitor(d, p, id) {
       '<p style="margin:0 0 8px;font-size:14px">' + esc(f.action) + '</p>' + (f.how && f.how.length ? '<ol style="margin:0 0 8px;padding-left:18px;font-size:13px">' + f.how.map(function (h) { return '<li>' + esc(h) + '</li>'; }).join('') + '</ol>' : '') +
       '<p style="margin:0;font-size:12px;color:#C9CEDA">Time: ' + esc(f.time) + (f.done_when ? ' · Done when: ' + esc(f.done_when) : '') + '</p></div>' +
       '<p>Your full USE Pack is ready too: every step after this one, a truth check, a 7-day tracker and fixes for when you get stuck. <a href="' + link + '" style="color:#B07F2A;font-weight:bold">Unlock it for $1</a>. Your pack number is <b>' + id + '</b>.</p>' +
-      '<p>Now use it.<br>Oluwaseyi Ashiru · Making Knowledge Usable</p></div>'
+      '<p>Now use it.<br>Oluwaseyi Ashiru · Turning Knowing into Doing</p></div>'
   });
 }
 
