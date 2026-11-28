@@ -56,13 +56,13 @@ function prop(k) { return PropertiesService.getScriptProperties().getProperty(k)
 function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.check) {                                    // open .../exec?check=1 in a browser to test the setup
-    var out = { ok: true, version: '2026-10-31', sheet: !!prop('SHEET_ID'), key_present: !!prop('GEMINI_API_KEY'), model: prop('MODEL') };
+    var out = { ok: true, version: '2026-11-28', sheet: !!prop('SHEET_ID'), key_present: !!prop('GEMINI_API_KEY'), model: prop('MODEL') };
     try { out.gemini = gemini([{ text: 'Reply with the single word: ready' }], 'You are a test.', {}).trim().slice(0, 40); }
     catch (x) { out.ok = false; out.gemini_error = String(x.message || x); }
     if (p.url) { try { var s = readSource({ link: p.url }, null); out.source = { kind: s.kind, readable: s.readable, title: s.title, points: (s.points || []).slice(0, 5), note: s.note }; } catch (x2) { out.source_error = String(x2.message || x2); } }
     return json(out);
   }
-  return json({ ok: true, service: 'USE Pack engine', version: '2026-10-31', ready: !!prop('GEMINI_API_KEY') && !!prop('SHEET_ID') });
+  return json({ ok: true, service: 'USE Pack engine', version: '2026-11-28', ready: !!prop('GEMINI_API_KEY') && !!prop('SHEET_ID') });
 }
 
 function doPost(e) {
