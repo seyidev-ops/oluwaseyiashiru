@@ -1,11 +1,11 @@
 /**
- * Making Knowledge Usable — the USE Pack engine.
+ * Turning Knowing into Doing — the USE Pack engine.
  *
  * Runs as a Google Apps Script web app in Oluwaseyi Ashiru's Google account.
  * For every entry from oluwaseyiashiru.com/start.html it:
- *   1. saves any uploaded video to Google Drive (Making Knowledge Usable / Uploads),
+ *   1. saves any uploaded video to Google Drive (Turning Knowing into Doing / Uploads),
  *   2. reads the video (YouTube link or upload) with the Gemini API and runs the USE method on it,
- *   3. builds a branded USE Pack PDF (Drive: Making Knowledge Usable / USE Packs),
+ *   3. builds a branded USE Pack PDF (Drive: Turning Knowing into Doing / USE Packs),
  *   4. emails the PDF to the visitor and a copy, with their details and the next action, to the owner,
  *   5. logs everything as one row in the "Entries" Google Sheet,
  *   6. returns the pack to the page so the visitor sees it immediately.
@@ -32,10 +32,10 @@ var HEADERS = ['Received', 'Entry ID', 'Name', 'Email', 'WhatsApp', 'Holding', '
 /* ------------------------------------------------------------------ */
 function setup() {
   var props = PropertiesService.getScriptProperties();
-  var root = DriveApp.createFolder('Making Knowledge Usable');
+  var root = DriveApp.createFolder('Turning Knowing into Doing');
   var uploads = root.createFolder('Uploads');
   var packs = root.createFolder('USE Packs');
-  var ss = SpreadsheetApp.create('Making Knowledge Usable — Entries');
+  var ss = SpreadsheetApp.create('Turning Knowing into Doing — Entries');
   var sheet = ss.getSheets()[0];
   sheet.setName('Entries');
   sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold').setBackground('#14213D').setFontColor('#F7F5F0');
@@ -178,10 +178,10 @@ function readSource(d, upload) {
 
   var sys = [
     'You read one piece of content a person learned from (a video, audio, page, or post) and report what it ACTUALLY says. Never invent or guess content.',
-    'Pick out the specific, usable teaching: techniques, steps, rules, examples, phrases, numbers, and named methods, with rough timestamps (mm:ss) for audio or video when you can.',
+    'Pick out the specific, actionable teaching: techniques, steps, rules, examples, phrases, numbers, and named methods, with rough timestamps (mm:ss) for audio or video when you can.',
     'If you only have a caption or the content is unclear, say so in limits and keep points to what is really there.',
     'Reply with JSON only: {"readable":true,"title":"","creator":"","format":"video|audio|article|post|other","length":"","summary":"two plain sentences","points":[{"point":"short name of the idea","detail":"what exactly it says or shows, in plain words","when":"mm:ss or empty","quote":"a short exact phrase if useful"}],"limits":""}',
-    'Give 3 to 8 points, most usable first. If you cannot see or hear any real content, return {"readable":false,"limits":"why"}.'
+    'Give 3 to 8 points, most actionable first. If you cannot see or hear any real content, return {"readable":false,"limits":"why"}.'
   ].join('\n');
   var raw = gemini(parts.concat([{ text: 'What the person says it is about: ' + (d.about || d.what || 'not given') }]), sys,
     { json: true, lowMedia: kind !== 'page' && kind !== 'caption' });
@@ -331,7 +331,7 @@ function makePack(d, source) {
   ].join('\n');
 
   var instructions = [
-    'You make knowledge usable for Oluwaseyi Ashiru ("Turning Knowing into Doing"), using the USE method: Understand it, Simplify it, Execute it.',
+    'You turn knowing into doing for Oluwaseyi Ashiru ("Turning Knowing into Doing"), using the USE method: Understand it, Simplify it, Execute it.',
     'THE JOB: give this person ONE first step that comes straight out of THIS source and moves them toward what they want, sized to the time they have today.',
     'Rules for first_step:',
     '- It must be built on ONE specific point from the source (name it in from_source, with the timestamp if there is one). Someone who has not seen the source should be able to tell which idea it uses.',

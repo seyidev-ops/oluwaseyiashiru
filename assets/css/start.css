@@ -1,4 +1,4 @@
-/* Start: one question at a time, then the entry is streamlined into a Usable Card */
+/* Start: one question at a time, then the entry is streamlined into an Action Card */
 .wizard { max-width: 760px; margin: 0 auto; padding-block: 40px 24px; }
 .wiz-head { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
 .progress svg { width: 56px; height: 56px; transform: rotate(0deg); }
