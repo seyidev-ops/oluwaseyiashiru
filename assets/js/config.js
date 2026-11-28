@@ -4,7 +4,7 @@
    Leave it empty and the Start page still gives every visitor their instant first step.
 
    OA_LINKS: where each icon goes. An empty link hides that icon. */
-window.OA_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzFBWFXGKR27ndKr7xjz_OK-RUAFV6mOK5dOxF_wC3uDlIkkU4yAfodIWp8KcHeox0o/exec';
+window.OA_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxoIiozqtMOA2bINvgEgyYLyGeBAul-x8hXa2_8EMpjlg48jr24NM2v-UxD9kaikCFM0A/exec';
 window.OA_LINKS = {
   whatsapp: 'https://wa.me/2347033134979',
   email: 'mailto:info@oluwaseyiashiru.com',
