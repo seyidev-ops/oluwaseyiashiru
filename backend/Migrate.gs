@@ -16,7 +16,7 @@
  */
 
 var NEW_OWNER = 'oluwaseyiashiruii@gmail.com';
-var OLD_ROOT_ID = '';   // filled in for step 2
+var OLD_ROOT_ID = '';   // optional: the folder ID from step 1 (it finds the shared settings file without it)
 var SECRET_KEYS = ['GEMINI_API_KEY', 'PAYSTACK_SECRET_KEY'];
 var MOVED_IDS = ['SHEET_ID', 'UPLOADS_ID', 'PACKS_ID'];
 
@@ -42,14 +42,16 @@ function exportForMigration() {
 
 /* ---------- Step 2: run in the NEW project ---------- */
 function importFromOldAccount() {
-  if (!OLD_ROOT_ID) throw new Error('Paste the folder ID from step 1 into OLD_ROOT_ID first.');
   var started = Date.now();
   var store = PropertiesService.getScriptProperties();
-  var oldRoot = DriveApp.getFolderById(OLD_ROOT_ID);
 
-  var f = oldRoot.getFilesByName('migration-settings.json');
-  if (!f.hasNext()) throw new Error('migration-settings.json not found. Run step 1 in the old project first.');
+  // Find the settings file the old account shared (by folder ID if given, otherwise by name)
+  var f = null;
+  if (OLD_ROOT_ID) { try { f = DriveApp.getFolderById(OLD_ROOT_ID.trim()).getFilesByName('migration-settings.json'); } catch (e) { f = null; } }
+  if (!f || !f.hasNext()) f = DriveApp.searchFiles("title = 'migration-settings.json' and trashed = false");
+  if (!f.hasNext()) throw new Error('migration-settings.json is not visible to this account. In the OLD project, run exportForMigration and check its log says "Shared with ' + NEW_OWNER + '".');
   var old = JSON.parse(f.next().getBlob().getDataAsString());
+  Logger.log('Found the old settings (' + Object.keys(old).length + ' items).');
 
   // New folders (made once; reused on a re-run)
   var root, uploads, packs;
