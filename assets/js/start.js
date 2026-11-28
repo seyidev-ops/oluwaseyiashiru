@@ -570,7 +570,7 @@
     if (p.tracker && p.tracker.length) { h('Seven-day tracker'); table(['Day', 'Morning', 'Evening'], p.tracker.map(function (t) { return [t.day, t.morning, t.evening]; })); }
     if (p.stuck && p.stuck.length) { h('If you get stuck'); table(['If this happens', 'Do this'], p.stuck.map(function (c) { return [c.problem, c.fix]; })); }
     if (p.faith_note) fullpack.appendChild(el('blockquote', 'fp-verse', p.faith_note));
-    fullpack.appendChild(el('p', 'fp-sign', 'Now use it.'));
+    fullpack.appendChild(el('p', 'fp-sign', 'Now act on it.'));
     if (!reduce && fullpack.animate) fullpack.animate([{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.2,.7,.2,1)' });
   }
 
@@ -630,7 +630,7 @@
   document.getElementById('copy').addEventListener('click', function () {
     var msg = document.getElementById('copy-msg');
     var text = current.title + '\n' + current.source + '\n\n' + current.steps.map(function (s, i) { return (i + 1) + '. ' + s[0] + ': ' + s[1]; }).join('\n') +
-      '\n\nYour first step today: ' + current.first + '\n\nNow use it. — oluwaseyiashiru.com';
+      '\n\nYour first step today: ' + current.first + '\n\nNow act on it. — oluwaseyiashiru.com';
     function fallback() {
       var ta = el('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
       document.body.appendChild(ta); ta.select();

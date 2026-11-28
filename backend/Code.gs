@@ -56,13 +56,13 @@ function prop(k) { return PropertiesService.getScriptProperties().getProperty(k)
 function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.check) {                                    // open .../exec?check=1 in a browser to test the setup
-    var out = { ok: true, version: '2026-11-28', sheet: !!prop('SHEET_ID'), key_present: !!prop('GEMINI_API_KEY'), model: prop('MODEL') };
+    var out = { ok: true, version: '2026-11-28b', sheet: !!prop('SHEET_ID'), key_present: !!prop('GEMINI_API_KEY'), model: prop('MODEL') };
     try { out.gemini = gemini([{ text: 'Reply with the single word: ready' }], 'You are a test.', {}).trim().slice(0, 40); }
     catch (x) { out.ok = false; out.gemini_error = String(x.message || x); }
     if (p.url) { try { var s = readSource({ link: p.url }, null); out.source = { kind: s.kind, readable: s.readable, title: s.title, points: (s.points || []).slice(0, 5), note: s.note }; } catch (x2) { out.source_error = String(x2.message || x2); } }
     return json(out);
   }
-  return json({ ok: true, service: 'USE Pack engine', version: '2026-11-28', ready: !!prop('GEMINI_API_KEY') && !!prop('SHEET_ID') });
+  return json({ ok: true, service: 'USE Pack engine', version: '2026-11-28b', ready: !!prop('GEMINI_API_KEY') && !!prop('SHEET_ID') });
 }
 
 function doPost(e) {
@@ -89,7 +89,7 @@ function doPost(e) {
     stage = 'save'; savePack(id, d, pack, pdf);
     var isMember = memberUse(d.email);
     stage = 'email';
-    if (isMember) MailApp.sendEmail({ to: d.email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'Your USE Pack: ' + pack.title, htmlBody: '<p>Hello ' + esc(d.name) + ',</p><p>Your full USE Pack is attached and below (Deeper Systems: ' + isMember + ' of 10 this month).</p>' + packHtml(d, pack, false) + '<p>Now use it.</p>', attachments: [pdf.getBlob()] });
+    if (isMember) MailApp.sendEmail({ to: d.email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'Your USE Pack: ' + pack.title, htmlBody: '<p>Hello ' + esc(d.name) + ',</p><p>Your full USE Pack is attached and below (Deeper Systems: ' + isMember + ' of 10 this month).</p>' + packHtml(d, pack, false) + '<p>Now act on it.</p>', attachments: [pdf.getBlob()] });
     notifyOwner(d, pack, pdf, upload, id);
     stage = 'log'; logRow(d, pack, pdf, upload, source, id);
     if (isMember) { markRow(id, 'Member', 'Pack ' + isMember + ' of 10'); return json({ ok: true, id: id, locked: false, member: isMember, pack: pack, pdf: Utilities.base64Encode(pdf.getBlob().getBytes()), pdfName: pdf.getName() }); }
@@ -396,7 +396,7 @@ function packHtml(d, p, forOwner) {
     h2('Seven-day tracker') + table(['Day', 'Morning', 'Evening', 'Done'], (p.tracker || []).map(function (t) { return [t.day, t.morning, t.evening, '☐']; })) +
     h2('If you get stuck') + table(['If this happens', 'Do this'], (p.stuck || []).map(function (c) { return [c.problem, c.fix]; })) +
     (p.faith_note ? '<p style="font-family:Georgia,serif;font-size:13px;border-left:3px solid ' + gold + ';padding-left:10px">' + esc(p.faith_note) + '</p>' : '') +
-    '<p style="font-family:Georgia,serif;font-size:20px;text-align:center;margin:22px 0 4px">Now use it.</p>' +
+    '<p style="font-family:Georgia,serif;font-size:20px;text-align:center;margin:22px 0 4px">Now act on it.</p>' +
     '<p style="text-align:center;font-size:10px;color:' + slate + '">oluwaseyiashiru.com · info@oluwaseyiashiru.com · +2347033134979</p>';
   if (forOwner && p.owner) {
     html += '<hr><h2 style="font-family:Georgia,serif">For the team</h2>' + table(['', ''], [['Summary', p.owner.summary], ['Their challenge', p.owner.challenge], ['Ready for the $1 step?', p.owner.readiness], ['Our next action', p.owner.next_action]]);
@@ -424,7 +424,7 @@ function notifyVisitor(d, p, id) {
       '<p style="margin:0 0 8px;font-size:14px">' + esc(f.action) + '</p>' + (f.how && f.how.length ? '<ol style="margin:0 0 8px;padding-left:18px;font-size:13px">' + f.how.map(function (h) { return '<li>' + esc(h) + '</li>'; }).join('') + '</ol>' : '') +
       '<p style="margin:0;font-size:12px;color:#C9CEDA">Time: ' + esc(f.time) + (f.done_when ? ' · Done when: ' + esc(f.done_when) : '') + '</p></div>' +
       '<p>Your full USE Pack is ready too: every step after this one, a truth check, a 7-day tracker and fixes for when you get stuck. <a href="' + link + '" style="color:#B07F2A;font-weight:bold">Unlock it for $1</a>. Your pack number is <b>' + id + '</b>.</p>' +
-      '<p>Now use it.<br>Oluwaseyi Ashiru · Turning Knowing into Doing</p></div>'
+      '<p>Now act on it.<br>Oluwaseyi Ashiru · Turning Knowing into Doing</p></div>'
   });
 }
 
@@ -462,7 +462,7 @@ function unlock(d) {
     if (Number(t.amount) < min) return { ok: false, error: 'That payment was less than the unlock amount.' };
     props.setProperty('REF_' + ref, d.id);
     MailApp.sendEmail({ to: saved.email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'Your full USE Pack: ' + saved.pack.title,
-      htmlBody: '<p>Hello ' + esc(saved.name) + ',</p><p>Thank you for committing. Your full USE Pack is attached and below.</p>' + packHtml({ name: saved.name, link: '' }, saved.pack, false) + '<p>Now use it.</p>',
+      htmlBody: '<p>Hello ' + esc(saved.name) + ',</p><p>Thank you for committing. Your full USE Pack is attached and below.</p>' + packHtml({ name: saved.name, link: '' }, saved.pack, false) + '<p>Now act on it.</p>',
       attachments: [DriveApp.getFileById(saved.pdfId).getBlob()] });
     markRow(d.id, 'Paid $1', 'Unlocked · ' + ref);
   }
@@ -495,7 +495,7 @@ function member(d) {
     sh.appendRow([new Date(), email, name, cust.phone || '', (t.plan_object && t.plan_object.name) || 'Deeper Systems', Number(t.amount) / 100, t.currency, ref, 0, 'Active']);
     MailApp.sendEmail({ to: prop('OWNER_EMAIL'), subject: 'New Deeper Systems member: ' + (name || email), body: 'Email: ' + email + '\nName: ' + name + '\nAmount: ' + (Number(t.amount) / 100) + ' ' + t.currency + '\nReference: ' + ref });
     if (email) MailApp.sendEmail({ to: email, name: 'Oluwaseyi Ashiru', replyTo: prop('OWNER_EMAIL'), subject: 'Welcome to Deeper Systems',
-      htmlBody: '<p>Welcome' + (name ? ', ' + esc(name.split(' ')[0]) : '') + '.</p><p>Your Deeper Systems month has started: ten full USE Packs from your own links and uploads. Use this email address on the Start page and your packs open in full.</p><p>Now use it.<br>Oluwaseyi Ashiru</p>' });
+      htmlBody: '<p>Welcome' + (name ? ', ' + esc(name.split(' ')[0]) : '') + '.</p><p>Your Deeper Systems month has started: ten full USE Packs from your own links and uploads. Use this email address on the Start page and your packs open in full.</p><p>Now act on it.<br>Oluwaseyi Ashiru</p>' });
   }
   return { ok: true, email: email };
 }
